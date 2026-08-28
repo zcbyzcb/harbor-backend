@@ -17,9 +17,12 @@ import org.springframework.stereotype.Component;
 public class EmployeeAuthenticationAdapter implements AuthenticationPort, EmployeeActivityPort {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(EmployeeAuthenticationAdapter.class);
-    @Resource private EmployeeAuthMapper employeeAuthMapper;
-    @Resource private PasswordEncoder passwordEncoder;
-    @Resource private LoginAttemptLimiter loginAttemptLimiter;
+    @Resource
+    private EmployeeAuthMapper employeeAuthMapper;
+    @Resource
+    private PasswordEncoder passwordEncoder;
+    @Resource
+    private LoginAttemptLimiter loginAttemptLimiter;
 
     @Override
     public EmployeeSessionIdentity authenticate(String username, String password, String source) {

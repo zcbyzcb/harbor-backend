@@ -11,7 +11,8 @@ import java.time.*;
 
 @Component
 public class GetHotelContextQurier {
-    @Resource private Clock clock;
+    @Resource
+    private Clock clock;
 
     @Value("${hotel.inventory-window-days:7}")
     private int days;

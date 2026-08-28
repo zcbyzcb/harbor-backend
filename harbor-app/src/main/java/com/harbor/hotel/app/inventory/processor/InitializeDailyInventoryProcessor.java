@@ -11,7 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class InitializeDailyInventoryProcessor {
-    @Resource private InventoryFactory inventoryFactory;
+    @Resource
+    private InventoryFactory inventoryFactory;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public int process(InitializeDailyInventoryDTO command) {

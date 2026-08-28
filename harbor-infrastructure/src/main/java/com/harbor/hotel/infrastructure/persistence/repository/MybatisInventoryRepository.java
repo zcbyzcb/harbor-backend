@@ -12,7 +12,8 @@ import java.util.List;
 
 @Repository
 public class MybatisInventoryRepository implements InventoryRepository {
-    @Resource private InventoryMapper inventoryMapper;
+    @Resource
+    private InventoryMapper inventoryMapper;
 
     @Override
     public boolean lockRoomType(Long id) {

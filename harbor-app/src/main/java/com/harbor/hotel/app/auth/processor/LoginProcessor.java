@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LoginProcessor {
-    @Resource private AuthenticationPort authenticationPort;
+    @Resource
+    private AuthenticationPort authenticationPort;
 
     public EmployeeDTO process(LoginDTO command) {
         if (command.username() == null

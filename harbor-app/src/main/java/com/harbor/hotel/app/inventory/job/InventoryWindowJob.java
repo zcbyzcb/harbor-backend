@@ -25,9 +25,12 @@ import java.util.List;
 @Component
 public class InventoryWindowJob {
     private static final Logger LOG = LoggerFactory.getLogger(InventoryWindowJob.class);
-    @Resource private InitializeDailyInventoryProcessor processor;
-    @Resource private ListRoomTypeIdsQurier types;
-    @Resource private Clock clock;
+    @Resource
+    private InitializeDailyInventoryProcessor processor;
+    @Resource
+    private ListRoomTypeIdsQurier types;
+    @Resource
+    private Clock clock;
 
     @Value("${hotel.inventory-window-days:7}")
     private int days;

@@ -18,7 +18,8 @@ import java.io.IOException;
 
 @Component
 public class ActiveEmployeeFilter extends OncePerRequestFilter {
-    @Resource private EmployeeActivityPort employeeActivityPort;
+    @Resource
+    private EmployeeActivityPort employeeActivityPort;
 
     @Override
     protected void doFilterInternal(

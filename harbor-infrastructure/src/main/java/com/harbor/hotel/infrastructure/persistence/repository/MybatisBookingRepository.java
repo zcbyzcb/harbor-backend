@@ -14,7 +14,8 @@ import java.util.List;
 
 @Repository
 public class MybatisBookingRepository implements BookingRepository {
-    @Resource private BookingMapper mapper;
+    @Resource
+    private BookingMapper mapper;
 
     private void one(int affected) {
         if (affected != 1) throw new DomainException("INVENTORY_STATE_CONFLICT");

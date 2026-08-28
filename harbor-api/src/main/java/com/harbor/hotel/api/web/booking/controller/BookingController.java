@@ -21,9 +21,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/booking_orders")
 public class BookingController {
     private static final Logger LOG = LoggerFactory.getLogger(BookingController.class);
-    @Resource private CreateBookingProcessor create;
-    @Resource private CheckInOrderProcessor checkIn;
-    @Resource private CancelBookingProcessor cancel;
+    @Resource
+    private CreateBookingProcessor create;
+    @Resource
+    private CheckInOrderProcessor checkIn;
+    @Resource
+    private CancelBookingProcessor cancel;
 
     @PostMapping
     public ApiResponse<MutationVO> create(

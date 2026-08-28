@@ -12,7 +12,8 @@ import org.springframework.transaction.annotation.*;
 
 @Component
 public class PageOrderQurier {
-    @Resource private OrderReadMapper mapper;
+    @Resource
+    private OrderReadMapper mapper;
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public OrderPageDTO query(OrderSearchDTO q) {

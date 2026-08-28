@@ -15,7 +15,8 @@ import java.time.ZoneId;
 
 @Configuration
 public class HotelTimeConfiguration {
-    @Resource private InventoryRepository inventoryRepository;
+    @Resource
+    private InventoryRepository inventoryRepository;
 
     @Bean
     InventoryFactory inventoryFactory() {

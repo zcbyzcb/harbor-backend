@@ -12,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class CheckInOrderProcessor {
-    @Resource private BookingFactory bookingFactory;
+    @Resource
+    private BookingFactory bookingFactory;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public Long process(CheckInCommandDTO command) {

@@ -104,15 +104,24 @@ class HotelWorkflowIT {
         }
     }
 
-    @Resource JdbcTemplate jdbc;
-    @Resource CreateBookingProcessor create;
-    @Resource CheckInOrderProcessor checkIn;
-    @Resource CancelBookingProcessor cancel;
-    @Resource InventoryWindowJob job;
-    @Resource InitializeDailyInventoryProcessor initialize;
-    @Resource InventoryMapper inventoryMapper;
-    @Resource ObjectMapper json;
-    @Resource com.harbor.hotel.infrastructure.persistence.mapper.OrderReadMapper orderReadMapper;
+    @Resource
+    JdbcTemplate jdbc;
+    @Resource
+    CreateBookingProcessor create;
+    @Resource
+    CheckInOrderProcessor checkIn;
+    @Resource
+    CancelBookingProcessor cancel;
+    @Resource
+    InventoryWindowJob job;
+    @Resource
+    InitializeDailyInventoryProcessor initialize;
+    @Resource
+    InventoryMapper inventoryMapper;
+    @Resource
+    ObjectMapper json;
+    @Resource
+    com.harbor.hotel.infrastructure.persistence.mapper.OrderReadMapper orderReadMapper;
     @LocalServerPort int port;
 
     @BeforeEach

@@ -18,9 +18,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    @Resource private PageOrderQurier page;
-    @Resource private GetOrderDetailQurier detail;
-    @Resource private ListAvailableRoomQurier candidates;
+    @Resource
+    private PageOrderQurier page;
+    @Resource
+    private GetOrderDetailQurier detail;
+    @Resource
+    private ListAvailableRoomQurier candidates;
 
     @GetMapping
     public ApiResponse<OrderPageVO> page(

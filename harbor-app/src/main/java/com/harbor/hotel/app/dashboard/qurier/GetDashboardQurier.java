@@ -14,8 +14,10 @@ import java.time.LocalDate;
 
 @Component
 public class GetDashboardQurier {
-    @Resource private DashboardReadMapper dashboardReadMapper;
-    @Resource private Clock clock;
+    @Resource
+    private DashboardReadMapper dashboardReadMapper;
+    @Resource
+    private Clock clock;
 
     @Transactional(
             readOnly = true,

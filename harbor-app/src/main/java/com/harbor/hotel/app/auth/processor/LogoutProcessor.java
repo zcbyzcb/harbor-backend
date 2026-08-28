@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LogoutProcessor {
-    @Resource private SessionEndPort sessions;
+    @Resource
+    private SessionEndPort sessions;
 
     public void process() {
         sessions.endCurrentSession();

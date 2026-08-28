@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class HotelContextController {
-    @Resource private GetHotelContextQurier qurier;
+    @Resource
+    private GetHotelContextQurier qurier;
 
     @GetMapping("/api/hotel-context")
     public ApiResponse<HotelContextVO> context() {

@@ -18,8 +18,10 @@ import java.util.stream.IntStream;
 
 @Component
 public class ListAvailableRoomTypeQurier {
-    @Resource private AvailabilityReadMapper availabilityReadMapper;
-    @Resource private Clock clock;
+    @Resource
+    private AvailabilityReadMapper availabilityReadMapper;
+    @Resource
+    private Clock clock;
 
     @Value("${hotel.inventory-window-days}")
     private int windowDays;

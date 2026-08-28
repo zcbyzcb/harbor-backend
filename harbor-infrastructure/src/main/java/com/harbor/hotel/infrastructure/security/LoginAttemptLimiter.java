@@ -17,7 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LoginAttemptLimiter {
     private static final int MAX_KEYS = 10000;
     private final ConcurrentHashMap<String, Attempt> attempts = new ConcurrentHashMap<>();
-    @Resource private Clock clock;
+    @Resource
+    private Clock clock;
 
     @Value("${hotel.auth.max-failures:5}")
     private int userLimit;

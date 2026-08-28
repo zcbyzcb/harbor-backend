@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
-    @Resource private GetDashboardQurier getDashboardQurier;
+    @Resource
+    private GetDashboardQurier getDashboardQurier;
 
     @GetMapping
     public ApiResponse<DashboardVO> get() {

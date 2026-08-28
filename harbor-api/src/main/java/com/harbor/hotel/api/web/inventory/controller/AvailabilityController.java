@@ -20,7 +20,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/room-types")
 public class AvailabilityController {
-    @Resource private ListAvailableRoomTypeQurier listAvailableRoomTypeQurier;
+    @Resource
+    private ListAvailableRoomTypeQurier listAvailableRoomTypeQurier;
 
     @GetMapping("/availability")
     public ApiResponse<List<AvailableRoomTypeVO>> list(

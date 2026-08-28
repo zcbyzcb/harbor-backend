@@ -13,8 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class CreateBookingProcessor {
-    @Resource private BookingFactory bookingFactory;
-    @Resource private OrderNoGenerator orderNoGenerator;
+    @Resource
+    private BookingFactory bookingFactory;
+    @Resource
+    private OrderNoGenerator orderNoGenerator;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public Long process(BookingCommandDTO command) {

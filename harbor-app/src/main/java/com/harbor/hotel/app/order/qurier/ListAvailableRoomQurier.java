@@ -13,7 +13,8 @@ import java.util.List;
 
 @Component
 public class ListAvailableRoomQurier {
-    @Resource private OrderReadMapper orderReadMapper;
+    @Resource
+    private OrderReadMapper orderReadMapper;
 
     public List<RoomCandidateDTO> query(Long id) {
         if (orderReadMapper.detail(id) == null) {

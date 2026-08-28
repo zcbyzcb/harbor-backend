@@ -36,10 +36,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Resource private LogoutProcessor logoutProcessor;
-    @Resource private LoginProcessor loginProcessor;
-    @Resource private GetCurrentEmployeeQurier currentEmployeeQurier;
-    @Resource private SecurityContextRepository securityContextRepository;
+    @Resource
+    private LogoutProcessor logoutProcessor;
+    @Resource
+    private LoginProcessor loginProcessor;
+    @Resource
+    private GetCurrentEmployeeQurier currentEmployeeQurier;
+    @Resource
+    private SecurityContextRepository securityContextRepository;
     private final SessionAuthenticationStrategy sessionAuthenticationStrategy =
             new ChangeSessionIdAuthenticationStrategy();
 
