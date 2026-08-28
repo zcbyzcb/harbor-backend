@@ -179,7 +179,11 @@ class HotelWorkflowIT {
                                 r ->
                                         new CheckInCommandDTO.AllocationDTO(
                                                 r,
-                                                List.of(new CheckInCommandDTO.GuestDTO("入住人", ""))))
+                                                List.of(
+                                                        new CheckInCommandDTO.GuestDTO(
+                                                                "入住人",
+                                                                "",
+                                                                "11010519491231002X"))))
                         .toList());
     }
 
@@ -469,6 +473,11 @@ class HotelWorkflowIT {
         String body =
                 "{\"roomTypeId\":\"1\",\"checkinDate\":\"2026-08-28\",\"checkoutDate\":\"2026-08-30\",\"roomCount\":2,\"bookerName\":\"测试客人\",\"bookerPhone\":\"13800000000\",\"confirmedPrice\":\"199.00\"}";
         String key = UUID.randomUUID().toString();
+        String invalidPhoneBody = body.replace("13800000000", "123");
+        assertEquals(
+                400,
+                http(c, "POST", "/booking_orders", invalidPhoneBody, token, UUID.randomUUID().toString())
+                        .statusCode());
         HttpResponse<String> response = http(c, "POST", "/booking_orders", body, token, key);
         assertEquals(200, response.statusCode(), response.body());
         assertEquals(200, http(c, "POST", "/booking_orders", body, token, key).statusCode());
@@ -499,8 +508,20 @@ class HotelWorkflowIT {
         JsonNode dash = json.readTree(http(c, "GET", "/dashboard", null, null, null).body());
         assertEquals(2, dash.at("/data/pendingCheckInRooms").asInt());
         assertEquals(10, dash.at("/data/availableRooms").asInt());
+        String invalidCheckBody =
+                "{\"rooms\":[{\"roomId\":\"101\",\"guests\":[{\"name\":\"甲\",\"identityNo\":\"123\"}]},{\"roomId\":\"102\",\"guests\":[{\"name\":\"乙\",\"identityNo\":\"11010519491231002X\"}]}]}";
+        assertEquals(
+                400,
+                http(
+                                c,
+                                "POST",
+                                "/booking_orders/" + id + "/check-in",
+                                invalidCheckBody,
+                                token,
+                                UUID.randomUUID().toString())
+                        .statusCode());
         String checkBody =
-                "{\"rooms\":[{\"roomId\":\"101\",\"guests\":[{\"name\":\"甲\"}]},{\"roomId\":\"102\",\"guests\":[{\"name\":\"乙\"}]}]}";
+                "{\"rooms\":[{\"roomId\":\"101\",\"guests\":[{\"name\":\"甲\",\"identityNo\":\"11010519491231002X\"}]},{\"roomId\":\"102\",\"guests\":[{\"name\":\"乙\",\"identityNo\":\"11010519491231002X\"}]}]}";
         HttpResponse<String> check =
                 http(
                         c,
@@ -510,6 +531,10 @@ class HotelWorkflowIT {
                         token,
                         UUID.randomUUID().toString());
         assertEquals(200, check.statusCode(), check.body());
+        assertEquals(
+                "11010519491231002X",
+                jdbc.queryForObject(
+                        "SELECT identity_no FROM checkin_guest WHERE guest_name = '甲'", String.class));
         assertEquals(
                 2,
                 json.readTree(http(c, "GET", "/orders/" + id, null, null, null).body())

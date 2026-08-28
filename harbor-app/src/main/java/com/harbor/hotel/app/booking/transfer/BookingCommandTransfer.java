@@ -33,7 +33,8 @@ public final class BookingCommandTransfer {
                                                         g ->
                                                                 new Guest(
                                                                         clean(g.name()),
-                                                                        clean(g.phone())))
+                                                                        clean(g.phone()),
+                                                                        clean(g.identityNo())))
                                                 .toList()))
                 .toList();
     }

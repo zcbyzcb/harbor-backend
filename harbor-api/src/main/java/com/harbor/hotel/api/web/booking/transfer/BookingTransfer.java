@@ -37,8 +37,7 @@ public final class BookingTransfer {
                                                                 g ->
                                                                         new CheckInCommandDTO
                                                                                 .GuestDTO(
-                                                                                g.name(),
-                                                                                g.phone()))
+                                                                                g.name(), g.phone(), g.identityNo()))
                                                         .toList()))
                         .toList());
     }

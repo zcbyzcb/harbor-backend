@@ -13,7 +13,8 @@ public final class BookingInputValidator {
                 || input.confirmedPrice().signum() < 0 || input.confirmedPrice().scale() > 2
                 || input.bookerName() == null || input.bookerName().isBlank()
                 || input.bookerPhone() == null
-                || !input.bookerPhone().matches("[+0-9][0-9 -]{5,31}")) {
+                || input.bookerPhone().length() != 11
+                || !input.bookerPhone().matches("1[3-9]\\d{9}")) {
             throw new DomainException(ErrorCode.INVALID_ARGUMENT);
         }
         if (orderNo == null || !orderNo.matches("UO\\d{18}")) {

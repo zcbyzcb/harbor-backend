@@ -26,7 +26,11 @@ public final class CheckInValidator {
     }
     private static boolean invalidGuest(Guest guest) {
         return guest == null || guest.name() == null || guest.name().isBlank()
-                || guest.name().length() > 64 || (guest.phone() != null && !guest.phone().isEmpty()
-                && !guest.phone().matches("[+0-9][0-9 -]{5,31}"));
+                || guest.name().length() > 64
+                || guest.identityNo() == null
+                || guest.identityNo().length() != 18
+                || (guest.phone() != null
+                        && !guest.phone().isEmpty()
+                        && !guest.phone().matches("[+0-9][0-9 -]{5,31}"));
     }
 }

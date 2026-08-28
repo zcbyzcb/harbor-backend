@@ -8,6 +8,6 @@
     INSERT INTO checkin_record(order_id,room_type_id,room_id,room_no_snapshot,checkin_time,checkin_by,checkin_request_id,checkin_request_hash) VALUES(#{orderId},#{roomTypeId},#{roomId},#{roomNo},#{now},#{employeeId},#{requestId},#{requestHash})
   </insert>
   <insert id="insertGuest">
-    INSERT INTO checkin_guest(checkin_id,guest_seq,guest_name,phone) VALUES(#{checkinId},#{seq},#{name},#{phone})
+    INSERT INTO checkin_guest(checkin_id,guest_seq,guest_name,phone,identity_no) VALUES(#{checkinId},#{seq},#{name},#{phone},#{identityNo})
   </insert>
 </mapper>

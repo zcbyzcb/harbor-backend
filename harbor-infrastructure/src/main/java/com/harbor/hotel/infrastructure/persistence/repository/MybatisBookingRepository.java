@@ -108,7 +108,7 @@ public class MybatisBookingRepository implements BookingRepository {
     }
 
     public void insertGuest(Long id, int seq, Guest guest) {
-        one(checkinMapper.insertGuest(id, seq, guest.name(), guest.phone()));
+        one(checkinMapper.insertGuest(id, seq, guest.name(), guest.phone(), guest.identityNo()));
     }
 
     public void occupyDetail(Long id, Long checkinId) {

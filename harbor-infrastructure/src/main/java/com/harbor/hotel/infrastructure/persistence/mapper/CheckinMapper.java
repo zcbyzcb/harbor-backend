@@ -9,5 +9,6 @@ public interface CheckinMapper {
     List<CheckinPO> findByOrderId(@Param("orderId") Long orderId);
     int insert(NewCheckinPO row);
     int insertGuest(@Param("checkinId") Long checkinId, @Param("seq") int seq,
-            @Param("name") String name, @Param("phone") String phone);
+            @Param("name") String name, @Param("phone") String phone,
+            @Param("identityNo") String identityNo);
 }

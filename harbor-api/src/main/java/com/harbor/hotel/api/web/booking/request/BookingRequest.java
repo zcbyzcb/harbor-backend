@@ -11,6 +11,6 @@ public record BookingRequest(
         @NotNull LocalDate checkoutDate,
         @Min(1) @Max(65535) int roomCount,
         @NotBlank @Size(max = 64) String bookerName,
-        @NotBlank @Size(max = 32) String bookerPhone,
+        @NotBlank @Size(min = 11, max = 11) @Pattern(regexp = "^1[3-9]\\d{9}$") String bookerPhone,
         @NotNull @DecimalMin("0.00") @Digits(integer = 8, fraction = 2) BigDecimal confirmedPrice,
         @Size(max = 500) String remark) {}

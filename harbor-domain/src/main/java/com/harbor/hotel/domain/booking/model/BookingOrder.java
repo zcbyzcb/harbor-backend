@@ -110,6 +110,7 @@ public final class BookingOrder {
             for (Guest guest : a.guests()) {
                 fields.add(guest.name());
                 fields.add(guest.phone());
+                fields.add(guest.identityNo());
             }
         }
         byte[] hash = RequestFingerprint.hash(fields.toArray());
