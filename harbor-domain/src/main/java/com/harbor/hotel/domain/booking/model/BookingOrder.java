@@ -92,7 +92,10 @@ public final class BookingOrder {
                     state.id(),
                     state.bookedRooms(),
                     state.checkedInRooms(),
-                    state.availableRooms());
+                    state.availableRooms(),
+                    state.bookedRooms() + order.roomCount(),
+                    state.checkedInRooms(),
+                    state.availableRooms() - order.roomCount());
         }
         for (Lock record : locks) bookings.transitionReservation(record.id(), "cancel");
         bookings.markCancelled(id, employeeId, LocalDateTime.now(clock), reason);
@@ -185,6 +188,9 @@ public final class BookingOrder {
                     state.id(),
                     state.bookedRooms(),
                     state.checkedInRooms(),
+                    state.availableRooms(),
+                    state.bookedRooms() + order.roomCount(),
+                    state.checkedInRooms() - order.roomCount(),
                     state.availableRooms());
         }
         for (Lock record : locks) bookings.transitionReservation(record.id(), "release");

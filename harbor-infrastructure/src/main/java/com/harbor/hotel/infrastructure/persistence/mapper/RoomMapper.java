@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface RoomMapper {
     List<RoomPO> findActiveByRoomTypeId(@Param("roomTypeId") Long roomTypeId);
-    List<RoomPO> lockByIds(@Param("ids") List<Long> ids);
+    List<RoomPO> findByIds(@Param("ids") List<Long> ids);
     int markOccupied(@Param("id") Long id);
 }

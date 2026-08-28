@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface InventoryLockMapper {
-    List<LockPO> lockByOrderId(@Param("orderId") Long orderId);
+    List<LockPO> findByOrderId(@Param("orderId") Long orderId);
     int insert(@Param("orderId") Long orderId, @Param("inventoryId") Long inventoryId, @Param("count") int count);
     int transition(@Param("id") Long id, @Param("status") String status);
 }

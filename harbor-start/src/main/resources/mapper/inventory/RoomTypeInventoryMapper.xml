@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.RoomTypeInventoryMapper">
-  <select id="lockByRoomTypeAndStayDate" resultType="com.harbor.hotel.infrastructure.persistence.po.InventoryPO">
-    SELECT i.id, i.total_rooms AS totalRooms, i.booked_rooms AS bookedRooms, i.checked_in_rooms AS checkedInRooms, i.available_rooms AS availableRooms, (SELECT COUNT(*) FROM room_inventory_detail d WHERE d.inventory_id = i.id AND d.is_deleted = 0) AS detailCount FROM room_type_inventory i WHERE i.room_type_id = #{roomTypeId} AND i.stay_date = #{stayDate} AND i.is_deleted = 0 FOR UPDATE
+  <select id="findByRoomTypeAndStayDate" resultType="com.harbor.hotel.infrastructure.persistence.po.InventoryPO">
+    SELECT i.id, i.total_rooms AS totalRooms, i.booked_rooms AS bookedRooms, i.checked_in_rooms AS checkedInRooms, i.available_rooms AS availableRooms FROM room_type_inventory i WHERE i.room_type_id = #{roomTypeId} AND i.stay_date = #{stayDate} AND i.is_deleted = 0
   </select>
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO room_type_inventory(room_type_id,stay_date,total_rooms,booked_rooms,checked_in_rooms,available_rooms) VALUES(#{roomTypeId},#{stayDate},#{totalRooms},0,0,#{availableRooms})
   </insert>
   <update id="updateCounts">
-    UPDATE room_type_inventory SET booked_rooms = #{booked}, checked_in_rooms = #{checkedIn}, available_rooms = #{available} WHERE id = #{id} AND is_deleted = 0 AND total_rooms = #{booked} + #{checkedIn} + #{available}
+    UPDATE room_type_inventory SET booked_rooms = #{booked}, checked_in_rooms = #{checkedIn}, available_rooms = #{available} WHERE id = #{id} AND is_deleted = 0 AND booked_rooms = #{expectedBooked} AND checked_in_rooms = #{expectedCheckedIn} AND available_rooms = #{expectedAvailable}
   </update>
   <select id="isConsistent" resultType="boolean">
     SELECT i.is_deleted = 0

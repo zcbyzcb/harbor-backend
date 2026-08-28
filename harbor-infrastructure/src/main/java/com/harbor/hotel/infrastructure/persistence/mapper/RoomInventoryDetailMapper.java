@@ -8,7 +8,8 @@ import java.util.List;
 public interface RoomInventoryDetailMapper {
     int insertBatch(@Param("inventoryId") Long inventoryId, @Param("roomTypeId") Long roomTypeId,
             @Param("rooms") List<InventoryRoomPO> rooms);
-    List<DetailPO> lockByInventoryIdsAndRoomIds(@Param("inventoryIds") List<Long> inventoryIds,
+    int countByInventoryId(@Param("inventoryId") Long inventoryId);
+    List<DetailPO> findByInventoryIdsAndRoomIds(@Param("inventoryIds") List<Long> inventoryIds,
             @Param("roomIds") List<Long> roomIds);
     int markOccupied(@Param("id") Long id, @Param("checkinId") Long checkinId);
 }

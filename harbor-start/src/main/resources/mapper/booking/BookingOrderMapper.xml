@@ -11,8 +11,8 @@
   <select id="orderType" resultType="long">
     SELECT room_type_id FROM booking_order WHERE id = #{id} AND is_deleted = 0
   </select>
-  <select id="lockOrder" resultType="com.harbor.hotel.infrastructure.persistence.po.OrderPO">
-    SELECT <include refid="columns"/> FROM booking_order WHERE id = #{id} AND is_deleted = 0 FOR UPDATE
+  <select id="findById" resultType="com.harbor.hotel.infrastructure.persistence.po.OrderPO">
+    SELECT <include refid="columns"/> FROM booking_order WHERE id = #{id} AND is_deleted = 0
   </select>
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO booking_order(order_no,create_by,booking_request_id,booking_request_hash,room_type_id,room_type_name_snapshot,room_count,booker_name,booker_phone,planned_checkin_time,planned_checkout_time,nights,nightly_price,total_amount,status,remark) VALUES(#{orderNo},#{employeeId},#{requestId},#{requestHash},#{roomTypeId},#{roomTypeName},#{roomCount},#{bookerName},#{bookerPhone},#{checkinTime},#{checkoutTime},#{nights},#{nightlyPrice},#{totalAmount},'PENDING',#{remark})

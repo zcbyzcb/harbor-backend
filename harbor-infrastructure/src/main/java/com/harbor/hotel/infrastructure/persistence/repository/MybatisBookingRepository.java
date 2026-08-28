@@ -37,7 +37,7 @@ public class MybatisBookingRepository implements BookingRepository {
     }
 
     public RoomType lockType(Long id) {
-        return BookingPersistenceTransfer.toDomain(roomTypeMapper.lockById(id));
+        return BookingPersistenceTransfer.toDomain(roomTypeMapper.findById(id));
     }
 
     public Order findRequest(Long employeeId, String key) {
@@ -49,7 +49,7 @@ public class MybatisBookingRepository implements BookingRepository {
     }
 
     public Order lockOrder(Long id) {
-        return BookingPersistenceTransfer.toDomain(bookingOrderMapper.lockOrder(id));
+        return BookingPersistenceTransfer.toDomain(bookingOrderMapper.findById(id));
     }
 
     public Long insertOrder(NewOrder order) {
@@ -60,7 +60,7 @@ public class MybatisBookingRepository implements BookingRepository {
     }
 
     public List<Lock> lockReservations(Long id) {
-        return inventoryLockMapper.lockByOrderId(id).stream()
+        return inventoryLockMapper.findByOrderId(id).stream()
                 .map(BookingPersistenceTransfer::toDomain)
                 .toList();
     }
@@ -69,8 +69,10 @@ public class MybatisBookingRepository implements BookingRepository {
         one(inventoryLockMapper.insert(orderId, inventoryId, count));
     }
 
-    public void updateInventory(Long id, int booked, int checkedIn, int available) {
-        one(roomTypeInventoryMapper.updateCounts(id, booked, checkedIn, available));
+    public void updateInventory(Long id, int booked, int checkedIn, int available,
+            int expectedBooked, int expectedCheckedIn, int expectedAvailable) {
+        one(roomTypeInventoryMapper.updateCounts(id, booked, checkedIn, available,
+                expectedBooked, expectedCheckedIn, expectedAvailable));
     }
 
     public void transitionReservation(Long id, String status) {
@@ -78,11 +80,11 @@ public class MybatisBookingRepository implements BookingRepository {
     }
 
     public List<Room> lockRooms(List<Long> ids) {
-        return roomMapper.lockByIds(ids).stream().map(BookingPersistenceTransfer::toDomain).toList();
+        return roomMapper.findByIds(ids).stream().map(BookingPersistenceTransfer::toDomain).toList();
     }
 
     public List<Detail> lockDetails(List<Long> inventories, List<Long> rooms) {
-        return roomInventoryDetailMapper.lockByInventoryIdsAndRoomIds(inventories, rooms).stream()
+        return roomInventoryDetailMapper.findByInventoryIdsAndRoomIds(inventories, rooms).stream()
                 .map(BookingPersistenceTransfer::toDomain)
                 .toList();
     }

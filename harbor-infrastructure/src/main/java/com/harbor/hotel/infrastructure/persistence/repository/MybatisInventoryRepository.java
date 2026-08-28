@@ -29,7 +29,7 @@ public class MybatisInventoryRepository implements InventoryRepository {
 
     @Override
     public boolean lockRoomType(Long id) {
-        return roomTypeMapper.lockById(id) != null;
+        return roomTypeMapper.findById(id) != null;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class MybatisInventoryRepository implements InventoryRepository {
 
     @Override
     public InventorySnapshot findByRoomTypeAndDate(Long roomTypeId, LocalDate stayDate) {
-        InventoryPO row = roomTypeInventoryMapper.lockByRoomTypeAndStayDate(roomTypeId, stayDate);
+        InventoryPO row = roomTypeInventoryMapper.findByRoomTypeAndStayDate(roomTypeId, stayDate);
         return row == null
                 ? null
                 : new InventorySnapshot(
@@ -72,7 +72,7 @@ public class MybatisInventoryRepository implements InventoryRepository {
                         row.bookedRooms(),
                         row.checkedInRooms(),
                         row.availableRooms(),
-                        row.detailCount());
+                        roomInventoryDetailMapper.countByInventoryId(row.id()));
     }
 
     @Override

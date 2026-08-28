@@ -105,7 +105,10 @@ public final class Reservation {
                     state.id(),
                     state.bookedRooms(),
                     state.checkedInRooms(),
-                    state.availableRooms());
+                    state.availableRooms(),
+                    state.bookedRooms() - input.roomCount(),
+                    state.checkedInRooms(),
+                    state.availableRooms() + input.roomCount());
             bookings.insertReservation(id, state.id(), input.roomCount());
         }
         bookings.audit(id, "CREATE", null, "PENDING", employeeId, key);

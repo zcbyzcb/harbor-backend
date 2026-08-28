@@ -20,7 +20,8 @@ public interface BookingRepository {
 
     void insertReservation(Long orderId, Long inventoryId, int count);
 
-    void updateInventory(Long inventoryId, int booked, int checkedIn, int available);
+    void updateInventory(Long inventoryId, int booked, int checkedIn, int available,
+            int expectedBooked, int expectedCheckedIn, int expectedAvailable);
 
     void transitionReservation(Long id, String status);
 

@@ -4,7 +4,7 @@
   <select id="findActive" resultType="com.harbor.hotel.infrastructure.persistence.po.RoomTypePO">
     SELECT id, type_name AS name, base_price AS price, max_guests AS maxGuests FROM room_type WHERE is_deleted = 0 ORDER BY id
   </select>
-  <select id="lockById" resultType="com.harbor.hotel.infrastructure.persistence.po.RoomTypePO">
-    SELECT id, type_name AS name, base_price AS price, max_guests AS maxGuests FROM room_type WHERE id = #{id} AND is_deleted = 0 FOR UPDATE
+  <select id="findById" resultType="com.harbor.hotel.infrastructure.persistence.po.RoomTypePO">
+    SELECT id, type_name AS name, base_price AS price, max_guests AS maxGuests FROM room_type WHERE id = #{id} AND is_deleted = 0
   </select>
 </mapper>

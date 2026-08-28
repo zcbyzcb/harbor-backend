@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public interface BookingOrderMapper {
     OrderPO findRequest(@Param("employeeId") Long employeeId, @Param("key") String key);
     Long orderType(@Param("id") Long id);
-    OrderPO lockOrder(@Param("id") Long id);
+    OrderPO findById(@Param("id") Long id);
     int insert(NewOrderPO row);
     int markCheckedIn(@Param("id") Long id);
     int markCancelled(@Param("id") Long id, @Param("employeeId") Long employeeId,

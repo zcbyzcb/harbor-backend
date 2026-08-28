@@ -4,8 +4,9 @@
   <insert id="insertBatch">
     INSERT INTO room_inventory_detail(inventory_id,room_type_id,room_id,room_no,status,is_occupied) VALUES <foreach collection="rooms" item="room" separator=",">(#{inventoryId},#{roomTypeId},#{room.id},#{room.roomNo},<choose><when test="room.physicalStatus != 'OUT_OF_SERVICE'">'ACTIVE'</when><otherwise>'OUT_OF_SERVICE'</otherwise></choose>,0)</foreach>
   </insert>
-  <select id="lockByInventoryIdsAndRoomIds" resultType="com.harbor.hotel.infrastructure.persistence.po.DetailPO">
-    SELECT d.id, d.inventory_id AS inventoryId, d.room_type_id AS roomTypeId, d.room_id AS roomId, d.status, d.is_occupied AS occupied, d.checkin_record_id AS checkinId FROM room_inventory_detail d JOIN room_type_inventory i ON i.id = d.inventory_id WHERE d.is_deleted = 0 AND d.inventory_id IN <foreach collection="inventoryIds" item="id" open="(" separator="," close=")">#{id}</foreach> AND d.room_id IN <foreach collection="roomIds" item="id" open="(" separator="," close=")">#{id}</foreach> ORDER BY i.stay_date, d.room_id FOR UPDATE
+  <select id="countByInventoryId" resultType="int">SELECT COUNT(*) FROM room_inventory_detail WHERE inventory_id = #{inventoryId} AND is_deleted = 0</select>
+  <select id="findByInventoryIdsAndRoomIds" resultType="com.harbor.hotel.infrastructure.persistence.po.DetailPO">
+    SELECT d.id, d.inventory_id AS inventoryId, d.room_type_id AS roomTypeId, d.room_id AS roomId, d.status, d.is_occupied AS occupied, d.checkin_record_id AS checkinId FROM room_inventory_detail d JOIN room_type_inventory i ON i.id = d.inventory_id WHERE d.is_deleted = 0 AND d.inventory_id IN <foreach collection="inventoryIds" item="id" open="(" separator="," close=")">#{id}</foreach> AND d.room_id IN <foreach collection="roomIds" item="id" open="(" separator="," close=")">#{id}</foreach> ORDER BY i.stay_date, d.room_id
   </select>
   <update id="markOccupied">
     UPDATE room_inventory_detail SET is_occupied = 1, checkin_record_id = #{checkinId} WHERE id = #{id} AND status = 'ACTIVE' AND is_occupied = 0 AND checkin_record_id IS NULL AND is_deleted = 0
