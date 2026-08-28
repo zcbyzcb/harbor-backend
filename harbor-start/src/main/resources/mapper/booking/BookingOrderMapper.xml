@@ -24,6 +24,6 @@
     UPDATE booking_order SET status = 'CANCELLED', cancel_time = #{now}, cancel_by = #{employeeId}, cancel_reason = #{reason} WHERE id = #{id} AND status = 'PENDING' AND is_deleted = 0
   </update>
   <select id="coveringOrders" resultType="int">
-    SELECT COUNT(*) FROM booking_order WHERE room_type_id = #{roomTypeId} AND DATE(planned_checkin_time) &lt;= #{stayDate} AND DATE(planned_checkout_time) &gt; #{stayDate}
+    SELECT COUNT(0) FROM booking_order WHERE room_type_id = #{roomTypeId} AND DATE(planned_checkin_time) &lt;= #{stayDate} AND DATE(planned_checkout_time) &gt; #{stayDate}
   </select>
 </mapper>

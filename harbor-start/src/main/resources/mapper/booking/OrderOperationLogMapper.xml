@@ -5,6 +5,6 @@
     INSERT INTO order_operation_log(order_id,operation,from_status,to_status,operator_id,request_id) VALUES(#{orderId},#{operation},#{fromStatus},#{toStatus},#{employeeId},#{requestId})
   </insert>
   <select id="countByOrderIdAndOperation" resultType="int">
-    SELECT COUNT(*) FROM order_operation_log WHERE order_id = #{orderId} AND operation = #{operation} AND is_deleted = 0
+    SELECT COUNT(0) FROM order_operation_log WHERE order_id = #{orderId} AND operation = #{operation} AND is_deleted = 0
   </select>
 </mapper>

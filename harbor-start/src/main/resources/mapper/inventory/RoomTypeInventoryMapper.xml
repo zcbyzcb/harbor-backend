@@ -29,11 +29,11 @@
     SELECT i.is_deleted = 0
       AND i.total_rooms = i.booked_rooms + i.checked_in_rooms + i.available_rooms
       AND i.total_rooms = (
-        SELECT COUNT(*) FROM room_inventory_detail d
+        SELECT COUNT(0) FROM room_inventory_detail d
         WHERE d.inventory_id = i.id AND d.status = 'ACTIVE' AND d.is_deleted = 0
       )
       AND i.checked_in_rooms = (
-        SELECT COUNT(*) FROM room_inventory_detail d
+        SELECT COUNT(0) FROM room_inventory_detail d
         WHERE d.inventory_id = i.id AND d.is_occupied = 1 AND d.is_deleted = 0
       )
       AND i.booked_rooms = (
@@ -44,8 +44,8 @@
         SELECT COALESCE(SUM(l.lock_room_count), 0) FROM inventory_lock_record l
         WHERE l.inventory_id = i.id AND l.lock_status = 'release' AND l.is_deleted = 0
       )
-      AND (SELECT COUNT(*) FROM room_inventory_detail d WHERE d.inventory_id = i.id) = (
-        SELECT COUNT(*) FROM room r WHERE r.room_type_id = i.room_type_id AND r.is_deleted = 0
+      AND (SELECT COUNT(0) FROM room_inventory_detail d WHERE d.inventory_id = i.id) = (
+        SELECT COUNT(0) FROM room r WHERE r.room_type_id = i.room_type_id AND r.is_deleted = 0
       )
       AND NOT EXISTS (
         SELECT 1

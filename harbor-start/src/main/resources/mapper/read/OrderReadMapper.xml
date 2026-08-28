@@ -18,7 +18,7 @@
     SELECT <include refid="columns"/> FROM booking_order WHERE <include refid="filters"/> ORDER BY create_time DESC,id DESC LIMIT #{limit} OFFSET #{offset}
   </select>
   <select id="count" resultType="long">
-    SELECT COUNT(*) FROM booking_order WHERE <include refid="filters"/>
+    SELECT COUNT(0) FROM booking_order WHERE <include refid="filters"/>
   </select>
   <select id="detail" resultType="com.harbor.hotel.infrastructure.persistence.po.OrderSummaryPO">
     SELECT <include refid="columns"/> FROM booking_order WHERE id=#{id} AND is_deleted=0
@@ -34,6 +34,6 @@
  JOIN room_type_inventory i ON i.room_type_id=o.room_type_id AND i.stay_date &gt;= DATE(o.planned_checkin_time) AND i.stay_date &lt; DATE(o.planned_checkout_time) AND i.is_deleted=0
  JOIN room_inventory_detail d ON d.inventory_id=i.id AND d.room_type_id=o.room_type_id AND d.is_deleted=0 AND d.status='ACTIVE' AND d.is_occupied=0 AND d.checkin_record_id IS NULL
  JOIN room r ON r.id=d.room_id AND r.room_type_id=o.room_type_id AND r.room_no=d.room_no AND r.is_deleted=0 AND r.physical_status='READY'
- WHERE o.id=#{id} AND o.status='PENDING' AND o.is_deleted=0 GROUP BY o.id,o.nights,d.room_id,d.room_no,r.floor_label HAVING COUNT(*)=o.nights ORDER BY d.room_no
+ WHERE o.id=#{id} AND o.status='PENDING' AND o.is_deleted=0 GROUP BY o.id,o.nights,d.room_id,d.room_no,r.floor_label HAVING COUNT(0)=o.nights ORDER BY d.room_no
  </select>
 </mapper>
