@@ -3,6 +3,7 @@ package com.harbor.hotel.app.order.qurier;
 import com.harbor.hotel.app.order.dto.*;
 import com.harbor.hotel.app.order.transfer.*;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.booking.model.BookingOrderStatus;
 import com.harbor.hotel.infrastructure.persistence.mapper.OrderReadMapper;
 
 import jakarta.annotation.Resource;
@@ -23,10 +24,7 @@ public class PageOrderQurier {
                 || (q.arrivalFrom() != null
                         && q.arrivalTo() != null
                         && q.arrivalTo().isBefore(q.arrivalFrom()))
-                || (q.status() != null
-                        && !q.status().isEmpty()
-                        && !java.util.Set.of("PENDING", "CHECKED_IN", "CANCELLED")
-                                .contains(q.status())))
+                || (q.status() != null && !q.status().isEmpty() && !isValidStatus(q.status())))
             throw new DomainException("INVALID_ARGUMENT");
         com.harbor.hotel.infrastructure.persistence.po.OrderSearchPO po =
                 OrderSearchTransfer.toPO(q);
@@ -35,5 +33,14 @@ public class PageOrderQurier {
                 mapper.count(po),
                 q.pageNo(),
                 q.pageSize());
+    }
+
+    private boolean isValidStatus(String status) {
+        try {
+            BookingOrderStatus.valueOf(status);
+            return true;
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
     }
 }

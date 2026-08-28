@@ -29,7 +29,7 @@ public final class BookingPersistenceTransfer {
                 v.checkinTime(),
                 v.checkoutTime(),
                 v.nights(),
-                v.status());
+                v.status().name());
     }
 
     public static Order toDomain(OrderPO v) {
@@ -46,7 +46,7 @@ public final class BookingPersistenceTransfer {
                         v.checkinTime(),
                         v.checkoutTime(),
                         v.nights(),
-                        v.status());
+                        BookingOrderStatus.fromCode(v.status()));
     }
 
     public static NewOrderPO toPO(NewOrder v) {
@@ -69,25 +69,25 @@ public final class BookingPersistenceTransfer {
     }
 
     public static LockPO toPO(Lock v) {
-        return new LockPO(v.id(), v.inventoryId(), v.roomCount(), v.status());
+        return new LockPO(v.id(), v.inventoryId(), v.roomCount(), v.status().code());
     }
 
     public static Lock toDomain(LockPO v) {
         return v == null
                 ? null
                 : new Lock(
-                        v.id(), v.inventoryId(), v.roomCount(), v.status());
+                        v.id(), v.inventoryId(), v.roomCount(), InventoryLockStatus.fromCode(v.status()));
     }
 
     public static RoomPO toPO(Room v) {
-        return new RoomPO(v.id(), v.roomTypeId(), v.roomNo(), v.physicalStatus());
+        return new RoomPO(v.id(), v.roomTypeId(), v.roomNo(), v.physicalStatus().name());
     }
 
     public static Room toDomain(RoomPO v) {
         return v == null
                 ? null
                 : new Room(
-                        v.id(), v.roomTypeId(), v.roomNo(), v.physicalStatus());
+                        v.id(), v.roomTypeId(), v.roomNo(), RoomPhysicalStatus.fromCode(v.physicalStatus()));
     }
 
     public static DetailPO toPO(Detail v) {
@@ -96,7 +96,7 @@ public final class BookingPersistenceTransfer {
                 v.inventoryId(),
                 v.roomTypeId(),
                 v.roomId(),
-                v.status(),
+                v.status().name(),
                 v.occupied(),
                 v.checkinId());
     }
@@ -109,7 +109,7 @@ public final class BookingPersistenceTransfer {
                         v.inventoryId(),
                         v.roomTypeId(),
                         v.roomId(),
-                        v.status(),
+                        RoomInventoryDetailStatus.fromCode(v.status()),
                         v.occupied(),
                         v.checkinId());
     }

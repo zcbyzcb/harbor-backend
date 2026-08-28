@@ -26,7 +26,7 @@ public interface BookingRepository {
 
     void convertReservationToCheckin(Long inventoryId, int roomCount);
 
-    void transitionReservation(Long id, String status);
+    void transitionReservation(Long id, InventoryLockStatus status);
 
     List<Room> lockRooms(List<Long> ids);
 
@@ -48,12 +48,12 @@ public interface BookingRepository {
 
     void audit(
             Long orderId,
-            String operation,
-            String fromStatus,
-            String toStatus,
+            OrderOperation operation,
+            BookingOrderStatus fromStatus,
+            BookingOrderStatus toStatus,
             Long employeeId,
             String requestId);
 
-    int auditCount(Long orderId, String operation);
+    int auditCount(Long orderId, OrderOperation operation);
 
 }

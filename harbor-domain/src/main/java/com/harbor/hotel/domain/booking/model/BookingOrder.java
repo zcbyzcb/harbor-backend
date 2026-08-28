@@ -59,7 +59,7 @@ public final class BookingOrder {
         return result;
     }
 
-    private List<Lock> locks(Order order, List<InventoryState> states, String expected) {
+    private List<Lock> locks(Order order, List<InventoryState> states, InventoryLockStatus expected) {
         List<Lock> locks = bookings.lockReservations(id);
         Set<Long> ids = new HashSet<>(states.stream().map(InventoryState::id).toList());
         if (locks.size() != states.size()
@@ -76,23 +76,23 @@ public final class BookingOrder {
     public Long cancel(Long employeeId, String requestKey, String reason) {
         String key = RequestFingerprint.key(requestKey);
         Order order = lock();
-        if ("CHECKED_IN".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
+        if (order.status() == BookingOrderStatus.CHECKED_IN) throw new DomainException("ORDER_STATUS_CONFLICT");
         List<InventoryState> states = inventory(order);
-        if ("CANCELLED".equals(order.status())) {
-            locks(order, states, "cancel");
-            if (bookings.auditCount(id, "CANCEL") != 1)
+        if (order.status() == BookingOrderStatus.CANCELLED) {
+            locks(order, states, InventoryLockStatus.CANCELLED);
+            if (bookings.auditCount(id, OrderOperation.CANCEL) != 1)
                 throw new DomainException("INVENTORY_DATA_INCONSISTENT");
             return id;
         }
-        if (!"PENDING".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
-        List<Lock> locks = locks(order, states, "locked");
+        if (order.status() != BookingOrderStatus.PENDING) throw new DomainException("ORDER_STATUS_CONFLICT");
+        List<Lock> locks = locks(order, states, InventoryLockStatus.LOCKED);
         for (InventoryState state : states) {
             state.cancelReservation(order.roomCount());
             bookings.cancelReservation(state.id(), order.roomCount());
         }
-        for (Lock record : locks) bookings.transitionReservation(record.id(), "cancel");
+        for (Lock record : locks) bookings.transitionReservation(record.id(), InventoryLockStatus.CANCELLED);
         bookings.markCancelled(id, employeeId, LocalDateTime.now(clock), reason);
-        bookings.audit(id, "CANCEL", "PENDING", "CANCELLED", employeeId, key);
+        bookings.audit(id, OrderOperation.CANCEL, BookingOrderStatus.PENDING, BookingOrderStatus.CANCELLED, employeeId, key);
         return id;
     }
 
@@ -113,12 +113,12 @@ public final class BookingOrder {
         }
         byte[] hash = RequestFingerprint.hash(fields.toArray());
         Order order = lock();
-        if ("CANCELLED".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
+        if (order.status() == BookingOrderStatus.CANCELLED) throw new DomainException("ORDER_STATUS_CONFLICT");
         List<InventoryState> states = inventory(order);
-        if ("CHECKED_IN".equals(order.status())) {
-            locks(order, states, "release");
+        if (order.status() == BookingOrderStatus.CHECKED_IN) {
+            locks(order, states, InventoryLockStatus.RELEASED);
             List<Checkin> records = bookings.checkins(id);
-            if (records.size() != order.roomCount() || bookings.auditCount(id, "CHECK_IN") != 1)
+            if (records.size() != order.roomCount() || bookings.auditCount(id, OrderOperation.CHECK_IN) != 1)
                 throw new DomainException("INVENTORY_DATA_INCONSISTENT");
             for (Checkin record : records) {
                 if (!record.employeeId().equals(employeeId) || !record.requestId().equals(key))
@@ -147,11 +147,11 @@ public final class BookingOrder {
                 throw new DomainException("INVENTORY_DATA_INCONSISTENT");
             return id;
         }
-        if (!"PENDING".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
+        if (order.status() != BookingOrderStatus.PENDING) throw new DomainException("ORDER_STATUS_CONFLICT");
         LocalDateTime now = LocalDateTime.now(clock);
         if (now.isBefore(order.checkinTime()) || !now.isBefore(order.checkoutTime()))
             throw new DomainException("CHECKIN_TIME_INVALID");
-        List<Lock> locks = locks(order, states, "locked");
+        List<Lock> locks = locks(order, states, InventoryLockStatus.LOCKED);
         int maxGuests = bookings.lockType(order.roomTypeId()).maxGuests();
         CheckInValidator.validateAllocations(sorted, order.roomCount(), maxGuests);
         List<Room> rooms = bookings.lockRooms(sorted.stream().map(Allocation::roomId).toList());
@@ -160,7 +160,7 @@ public final class BookingOrder {
                         .anyMatch(
                                 r ->
                                         !r.roomTypeId().equals(order.roomTypeId())
-                                                || !"READY".equals(r.physicalStatus())))
+                                                || r.physicalStatus() != RoomPhysicalStatus.READY))
             throw new DomainException("ROOM_NOT_AVAILABLE");
         List<Detail> details =
                 bookings.lockDetails(
@@ -171,7 +171,7 @@ public final class BookingOrder {
                         .anyMatch(
                                 d ->
                                         !d.roomTypeId().equals(order.roomTypeId())
-                                                || !"ACTIVE".equals(d.status())
+                                                || d.status() != RoomInventoryDetailStatus.ACTIVE
                                                 || d.occupied() != 0
                                                 || d.checkinId() != null))
             throw new DomainException("ROOM_NOT_AVAILABLE");
@@ -179,7 +179,7 @@ public final class BookingOrder {
             state.convertToCheckin(order.roomCount());
             bookings.convertReservationToCheckin(state.id(), order.roomCount());
         }
-        for (Lock record : locks) bookings.transitionReservation(record.id(), "release");
+        for (Lock record : locks) bookings.transitionReservation(record.id(), InventoryLockStatus.RELEASED);
         for (Allocation allocation : sorted) {
             Room room =
                     rooms.stream()
@@ -205,7 +205,7 @@ public final class BookingOrder {
             bookings.occupyRoom(room.id());
         }
         bookings.markCheckedIn(id);
-        bookings.audit(id, "CHECK_IN", "PENDING", "CHECKED_IN", employeeId, key);
+        bookings.audit(id, OrderOperation.CHECK_IN, BookingOrderStatus.PENDING, BookingOrderStatus.CHECKED_IN, employeeId, key);
         return id;
     }
 }

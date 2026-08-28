@@ -5,6 +5,6 @@ public record Detail(
         Long inventoryId,
         Long roomTypeId,
         Long roomId,
-        String status,
+        RoomInventoryDetailStatus status,
         int occupied,
         Long checkinId) {}

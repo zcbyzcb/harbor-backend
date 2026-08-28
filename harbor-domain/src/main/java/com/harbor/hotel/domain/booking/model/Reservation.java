@@ -104,7 +104,7 @@ public final class Reservation {
             bookings.reserveInventory(state.id(), input.roomCount());
             bookings.insertReservation(id, state.id(), input.roomCount());
         }
-        bookings.audit(id, "CREATE", null, "PENDING", employeeId, key);
+        bookings.audit(id, OrderOperation.CREATE, null, BookingOrderStatus.PENDING, employeeId, key);
         return id;
     }
 
@@ -120,12 +120,11 @@ public final class Reservation {
                 throw new DomainException("INVENTORY_DATA_INCONSISTENT");
             ids.add(row.id());
         }
-        String expected =
+        InventoryLockStatus expected =
                 switch (previous.status()) {
-                    case "PENDING" -> "locked";
-                    case "CHECKED_IN" -> "release";
-                    case "CANCELLED" -> "cancel";
-                    default -> "invalid";
+                    case PENDING -> InventoryLockStatus.LOCKED;
+                    case CHECKED_IN -> InventoryLockStatus.RELEASED;
+                    case CANCELLED -> InventoryLockStatus.CANCELLED;
                 };
         java.util.List<Lock> locks = bookings.lockReservations(previous.id());
         if (ids.size() != previous.nights()
@@ -137,7 +136,7 @@ public final class Reservation {
                                                 || !expected.equals(l.status())
                                                 || l.roomCount() != previous.roomCount())
                 || !ids.isEmpty()
-                || bookings.auditCount(previous.id(), "CREATE") != 1)
+                || bookings.auditCount(previous.id(), OrderOperation.CREATE) != 1)
             throw new DomainException("INVENTORY_DATA_INCONSISTENT");
         return previous.id();
     }

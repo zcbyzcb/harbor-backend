@@ -4,6 +4,7 @@ import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
 import com.harbor.hotel.domain.inventory.model.RoomSeed;
 import com.harbor.hotel.domain.inventory.model.RoomTypeSeed;
+import com.harbor.hotel.domain.booking.model.RoomPhysicalStatus;
 import com.harbor.hotel.infrastructure.persistence.mapper.*;
 import com.harbor.hotel.infrastructure.persistence.po.*;
 
@@ -57,7 +58,8 @@ public class MybatisInventoryRepository implements InventoryRepository {
                                 new RoomSeed(
                                         row.id(),
                                         row.roomNo(),
-                                        !"OUT_OF_SERVICE".equals(row.physicalStatus())))
+                                        !RoomPhysicalStatus.OUT_OF_SERVICE.name()
+                                                .equals(row.physicalStatus())))
                 .toList();
     }
 
@@ -92,7 +94,9 @@ public class MybatisInventoryRepository implements InventoryRepository {
                                         new InventoryRoomPO(
                                                 room.id(),
                                                 room.roomNo(),
-                                                room.active() ? "READY" : "OUT_OF_SERVICE"))
+                                                room.active()
+                                                        ? RoomPhysicalStatus.READY.name()
+                                                        : RoomPhysicalStatus.OUT_OF_SERVICE.name()))
                         .toList();
         if (!rows.isEmpty()
                 && roomInventoryDetailMapper.insertBatch(inventoryId, roomTypeId, rows) != rows.size()) {

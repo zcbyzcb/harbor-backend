@@ -81,8 +81,8 @@ public class MybatisBookingRepository implements BookingRepository {
         one(roomTypeInventoryMapper.checkIn(id, roomCount));
     }
 
-    public void transitionReservation(Long id, String status) {
-        one(inventoryLockMapper.transition(id, status));
+    public void transitionReservation(Long id, InventoryLockStatus status) {
+        one(inventoryLockMapper.transition(id, status.code()));
     }
 
     public List<Room> lockRooms(List<Long> ids) {
@@ -128,15 +128,16 @@ public class MybatisBookingRepository implements BookingRepository {
 
     public void audit(
             Long id,
-            String operation,
-            String fromStatus,
-            String toStatus,
+            OrderOperation operation,
+            BookingOrderStatus fromStatus,
+            BookingOrderStatus toStatus,
             Long employeeId,
             String key) {
-        one(orderOperationLogMapper.insert(id, operation, fromStatus, toStatus, employeeId, key));
+        one(orderOperationLogMapper.insert(id, operation.name(),
+                fromStatus == null ? null : fromStatus.name(), toStatus.name(), employeeId, key));
     }
 
-    public int auditCount(Long id, String operation) {
-        return orderOperationLogMapper.countByOrderIdAndOperation(id, operation);
+    public int auditCount(Long id, OrderOperation operation) {
+        return orderOperationLogMapper.countByOrderIdAndOperation(id, operation.name());
     }
 }

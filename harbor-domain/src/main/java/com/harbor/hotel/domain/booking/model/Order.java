@@ -13,4 +13,4 @@ public record Order(
         LocalDateTime checkinTime,
         LocalDateTime checkoutTime,
         int nights,
-        String status) {}
+        BookingOrderStatus status) {}
