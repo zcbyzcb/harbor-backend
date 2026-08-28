@@ -9,7 +9,6 @@ import com.harbor.hotel.domain.shared.StayPeriod;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.UUID;
 
 public final class Reservation {
     private final BookingRepository bookings;
@@ -24,7 +23,7 @@ public final class Reservation {
         window = w;
     }
 
-    public Long book(BookingInput input, Long employeeId, String requestKey) {
+    public Long book(BookingInput input, Long employeeId, String requestKey, String orderNo) {
         String key = RequestFingerprint.key(requestKey);
         if (input.roomTypeId() == null
                 || input.roomTypeId() <= 0
@@ -39,6 +38,8 @@ public final class Reservation {
                 || !input.bookerPhone().matches("[+0-9][0-9 -]{5,31}"))
             throw new DomainException("INVALID_ARGUMENT");
         var period = new StayPeriod(input.checkinDate(), input.checkoutDate());
+        if (orderNo == null || !orderNo.matches("UO\\d{18}"))
+            throw new DomainException("INVALID_ORDER_NO");
         byte[] hash =
                 RequestFingerprint.hash(
                         input.roomTypeId(),
@@ -94,7 +95,7 @@ public final class Reservation {
         Long id =
                 bookings.insertOrder(
                         new BookingRepository.NewOrder(
-                                "BK" + UUID.randomUUID().toString().replace("-", ""),
+                                orderNo,
                                 employeeId,
                                 key,
                                 hash,

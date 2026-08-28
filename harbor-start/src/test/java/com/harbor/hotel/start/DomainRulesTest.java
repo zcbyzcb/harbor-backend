@@ -2,14 +2,32 @@ package com.harbor.hotel.start;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.harbor.hotel.app.booking.OrderNoGenerator;
 import com.harbor.hotel.domain.inventory.model.InventoryState;
 import com.harbor.hotel.domain.shared.*;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.HashSet;
 
 class DomainRulesTest {
+    @Test
+    void orderNoUsesTimestampMachineAndUniqueRandomSuffix() {
+        var generator =
+                new OrderNoGenerator(
+                        Clock.fixed(Instant.ofEpochMilli(1_777_777_777_777L), ZoneId.of("Asia/Shanghai")),
+                        7);
+        var values = new HashSet<String>();
+        for (int index = 0; index < 100; index++) values.add(generator.next());
+        assertEquals(100, values.size());
+        assertTrue(values.stream().allMatch(value -> value.matches("UO1777777777777007\\d{2}")));
+        assertThrows(DomainException.class, generator::next);
+    }
+
     @Test
     void inventoryConservesAcrossTransitions() {
         var i = new InventoryState(1L, 1L, 4, 0, 0, 4);

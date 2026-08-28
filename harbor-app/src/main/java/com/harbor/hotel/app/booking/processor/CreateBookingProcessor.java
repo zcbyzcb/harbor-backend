@@ -1,5 +1,6 @@
 package com.harbor.hotel.app.booking.processor;
 
+import com.harbor.hotel.app.booking.OrderNoGenerator;
 import com.harbor.hotel.app.booking.dto.BookingCommandDTO;
 import com.harbor.hotel.app.booking.transfer.BookingCommandTransfer;
 import com.harbor.hotel.domain.booking.model.BookingFactory;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class CreateBookingProcessor {
     @Resource private BookingFactory bookingFactory;
+    @Resource private OrderNoGenerator orderNoGenerator;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public Long process(BookingCommandDTO command) {
@@ -21,6 +23,7 @@ public class CreateBookingProcessor {
                 .book(
                         BookingCommandTransfer.toDomain(command),
                         command.employeeId(),
-                        command.requestId());
+                        command.requestId(),
+                        orderNoGenerator.next());
     }
 }

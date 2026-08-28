@@ -35,6 +35,8 @@ mybatis:
 hotel:
   zone-id: Asia/Shanghai
   inventory-window-days: 7
+  order-no:
+    machine-id: ${HOTEL_ORDER_NO_MACHINE_ID:1}
   xxl-job:
     enabled: false
     admin-addresses: ${XXL_JOB_ADMIN_ADDRESSES:}
