@@ -1,6 +1,7 @@
 package com.harbor.hotel.domain.booking.model;
 
 import com.harbor.hotel.domain.booking.repository.BookingRepository;
+import com.harbor.hotel.domain.booking.validator.CheckInValidator;
 import com.harbor.hotel.domain.inventory.model.InventoryState;
 import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
@@ -101,11 +102,7 @@ public final class BookingOrder {
 
     public Long checkIn(Long employeeId, String requestKey, List<Allocation> allocations) {
         String key = RequestFingerprint.key(requestKey);
-        if (allocations == null
-                || allocations.isEmpty()
-                || allocations.stream()
-                        .anyMatch(a -> a == null || a.roomId() == null || a.guests() == null))
-            throw new DomainException("INVALID_ARGUMENT");
+        CheckInValidator.validateStructure(allocations);
         List<Allocation> sorted =
                 allocations.stream().sorted(Comparator.comparing(Allocation::roomId)).toList();
         List<Object> fields = new ArrayList<>();
@@ -159,28 +156,8 @@ public final class BookingOrder {
         if (now.isBefore(order.checkinTime()) || !now.isBefore(order.checkoutTime()))
             throw new DomainException("CHECKIN_TIME_INVALID");
         List<Lock> locks = locks(order, states, "locked");
-        if (sorted.size() != order.roomCount()
-                || sorted.stream().map(Allocation::roomId).distinct().count() != order.roomCount())
-            throw new DomainException("ROOM_COUNT_MISMATCH");
         int maxGuests = bookings.lockType(order.roomTypeId()).maxGuests();
-        for (Allocation allocation : sorted) {
-            if (allocation.guests().isEmpty()
-                    || allocation.guests().size() > maxGuests
-                    || allocation.guests().stream()
-                            .anyMatch(
-                                    g ->
-                                            g == null
-                                                    || g.name() == null
-                                                    || g.name().isBlank()
-                                                    || g.name().length() > 64
-                                                    || (g.phone() != null
-                                                            && !g.phone().isEmpty()
-                                                            && !g.phone()
-                                                                    .matches(
-                                                                            "[+0-9][0-9"
-                                                                                + " -]{5,31}"))))
-                throw new DomainException("INVALID_GUESTS");
-        }
+        CheckInValidator.validateAllocations(sorted, order.roomCount(), maxGuests);
         List<Room> rooms = bookings.lockRooms(sorted.stream().map(Allocation::roomId).toList());
         if (rooms.size() != order.roomCount()
                 || rooms.stream()

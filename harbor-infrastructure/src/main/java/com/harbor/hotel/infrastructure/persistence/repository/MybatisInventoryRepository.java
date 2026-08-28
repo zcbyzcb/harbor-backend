@@ -4,7 +4,8 @@ import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
 import com.harbor.hotel.domain.inventory.model.RoomSeed;
 import com.harbor.hotel.domain.inventory.model.RoomTypeSeed;
-import com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper;
+import com.harbor.hotel.infrastructure.persistence.mapper.*;
+import com.harbor.hotel.infrastructure.persistence.po.*;
 
 import jakarta.annotation.Resource;
 
@@ -16,33 +17,41 @@ import java.util.List;
 @Repository
 public class MybatisInventoryRepository implements InventoryRepository {
     @Resource
-    private InventoryMapper inventoryMapper;
+    private RoomTypeMapper roomTypeMapper;
+    @Resource
+    private RoomMapper roomMapper;
+    @Resource
+    private BookingOrderMapper bookingOrderMapper;
+    @Resource
+    private RoomTypeInventoryMapper roomTypeInventoryMapper;
+    @Resource
+    private RoomInventoryDetailMapper roomInventoryDetailMapper;
 
     @Override
     public boolean lockRoomType(Long id) {
-        return inventoryMapper.lockRoomType(id) != null;
+        return roomTypeMapper.lockById(id) != null;
     }
 
     @Override
     public boolean hasCoveringOrder(Long id, LocalDate date) {
-        return inventoryMapper.coveringOrders(id, date) > 0;
+        return bookingOrderMapper.coveringOrders(id, date) > 0;
     }
 
     @Override
     public boolean isConsistent(Long id) {
-        return inventoryMapper.isConsistent(id);
+        return roomTypeInventoryMapper.isConsistent(id);
     }
 
     @Override
     public List<RoomTypeSeed> findActiveRoomTypes() {
-        return inventoryMapper.findActiveRoomTypes().stream()
+        return roomTypeMapper.findActive().stream()
                 .map(row -> new RoomTypeSeed(row.id()))
                 .toList();
     }
 
     @Override
     public List<RoomSeed> findActiveRooms(Long roomTypeId) {
-        return inventoryMapper.findActiveRooms(roomTypeId).stream()
+        return roomMapper.findActiveByRoomTypeId(roomTypeId).stream()
                 .map(
                         row ->
                                 new RoomSeed(
@@ -54,8 +63,7 @@ public class MybatisInventoryRepository implements InventoryRepository {
 
     @Override
     public InventorySnapshot findByRoomTypeAndDate(Long roomTypeId, LocalDate stayDate) {
-        InventoryMapper.InventoryPO row =
-                inventoryMapper.findByRoomTypeAndDate(roomTypeId, stayDate);
+        InventoryPO row = roomTypeInventoryMapper.lockByRoomTypeAndStayDate(roomTypeId, stayDate);
         return row == null
                 ? null
                 : new InventorySnapshot(
@@ -69,26 +77,25 @@ public class MybatisInventoryRepository implements InventoryRepository {
 
     @Override
     public Long createInventory(Long roomTypeId, LocalDate stayDate, int totalRooms) {
-        InventoryMapper.InventoryInsertPO row =
-                new InventoryMapper.InventoryInsertPO(roomTypeId, stayDate, totalRooms, totalRooms);
-        if (inventoryMapper.insertInventory(row) != 1)
+        NewInventoryPO row = new NewInventoryPO(roomTypeId, stayDate, totalRooms, totalRooms);
+        if (roomTypeInventoryMapper.insert(row) != 1)
             throw new IllegalStateException("inventory insert failed");
         return row.getId();
     }
 
     @Override
     public void createDetails(Long inventoryId, Long roomTypeId, List<RoomSeed> rooms) {
-        List<InventoryMapper.RoomPO> rows =
+        List<InventoryRoomPO> rows =
                 rooms.stream()
                         .map(
                                 room ->
-                                        new InventoryMapper.RoomPO(
+                                        new InventoryRoomPO(
                                                 room.id(),
                                                 room.roomNo(),
                                                 room.active() ? "READY" : "OUT_OF_SERVICE"))
                         .toList();
         if (!rows.isEmpty()
-                && inventoryMapper.insertDetails(inventoryId, roomTypeId, rows) != rows.size()) {
+                && roomInventoryDetailMapper.insertBatch(inventoryId, roomTypeId, rows) != rows.size()) {
             throw new IllegalStateException("inventory detail insert failed");
         }
     }

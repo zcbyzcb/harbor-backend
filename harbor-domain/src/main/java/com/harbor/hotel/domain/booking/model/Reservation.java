@@ -1,6 +1,7 @@
 package com.harbor.hotel.domain.booking.model;
 
 import com.harbor.hotel.domain.booking.repository.BookingRepository;
+import com.harbor.hotel.domain.booking.validator.BookingInputValidator;
 import com.harbor.hotel.domain.inventory.model.InventoryState;
 import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
@@ -26,21 +27,8 @@ public final class Reservation {
 
     public Long book(BookingInput input, Long employeeId, String requestKey, String orderNo) {
         String key = RequestFingerprint.key(requestKey);
-        if (input.roomTypeId() == null
-                || input.roomTypeId() <= 0
-                || input.roomCount() < 1
-                || input.roomCount() > 65535
-                || input.confirmedPrice() == null
-                || input.confirmedPrice().signum() < 0
-                || input.confirmedPrice().scale() > 2
-                || input.bookerName() == null
-                || input.bookerName().isBlank()
-                || input.bookerPhone() == null
-                || !input.bookerPhone().matches("[+0-9][0-9 -]{5,31}"))
-            throw new DomainException("INVALID_ARGUMENT");
+        BookingInputValidator.validate(input, orderNo);
         StayPeriod period = new StayPeriod(input.checkinDate(), input.checkoutDate());
-        if (orderNo == null || !orderNo.matches("UO\\d{18}"))
-            throw new DomainException("INVALID_ORDER_NO");
         byte[] hash =
                 RequestFingerprint.hash(
                         input.roomTypeId(),

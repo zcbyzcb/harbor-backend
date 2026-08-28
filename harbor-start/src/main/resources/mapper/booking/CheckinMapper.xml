@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.CheckinMapper">
+  <select id="findByOrderId" resultType="com.harbor.hotel.infrastructure.persistence.po.CheckinPO">
+    SELECT id, room_id AS roomId, checkin_by AS employeeId, checkin_request_id AS requestId, checkin_request_hash AS requestHash FROM checkin_record WHERE order_id = #{orderId} AND is_deleted = 0 ORDER BY room_id
+  </select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO checkin_record(order_id,room_type_id,room_id,room_no_snapshot,checkin_time,checkin_by,checkin_request_id,checkin_request_hash) VALUES(#{orderId},#{roomTypeId},#{roomId},#{roomNo},#{now},#{employeeId},#{requestId},#{requestHash})
+  </insert>
+  <insert id="insertGuest">
+    INSERT INTO checkin_guest(checkin_id,guest_seq,guest_name,phone) VALUES(#{checkinId},#{seq},#{name},#{phone})
+  </insert>
+</mapper>

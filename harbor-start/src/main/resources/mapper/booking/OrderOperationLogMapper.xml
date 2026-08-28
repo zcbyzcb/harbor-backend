@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.OrderOperationLogMapper">
+  <insert id="insert">
+    INSERT INTO order_operation_log(order_id,operation,from_status,to_status,operator_id,request_id) VALUES(#{orderId},#{operation},#{fromStatus},#{toStatus},#{employeeId},#{requestId})
+  </insert>
+  <select id="countByOrderIdAndOperation" resultType="int">
+    SELECT COUNT(*) FROM order_operation_log WHERE order_id = #{orderId} AND operation = #{operation} AND is_deleted = 0
+  </select>
+</mapper>

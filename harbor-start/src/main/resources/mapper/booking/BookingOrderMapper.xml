@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.BookingOrderMapper">
+  <sql id="columns">
+    id, order_no AS orderNo, create_by AS employeeId, booking_request_id AS requestId, booking_request_hash AS requestHash, room_type_id AS roomTypeId, room_count AS roomCount, planned_checkin_time AS checkinTime, planned_checkout_time AS checkoutTime, nights, status
+  </sql>
+  <select id="findRequest" resultType="com.harbor.hotel.infrastructure.persistence.po.OrderPO">
+    SELECT <include refid="columns"/> FROM booking_order
+    WHERE create_by = #{employeeId} AND booking_request_id = #{key} AND is_deleted = 0
+  </select>
+  <select id="orderType" resultType="long">
+    SELECT room_type_id FROM booking_order WHERE id = #{id} AND is_deleted = 0
+  </select>
+  <select id="lockOrder" resultType="com.harbor.hotel.infrastructure.persistence.po.OrderPO">
+    SELECT <include refid="columns"/> FROM booking_order WHERE id = #{id} AND is_deleted = 0 FOR UPDATE
+  </select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO booking_order(order_no,create_by,booking_request_id,booking_request_hash,room_type_id,room_type_name_snapshot,room_count,booker_name,booker_phone,planned_checkin_time,planned_checkout_time,nights,nightly_price,total_amount,status,remark) VALUES(#{orderNo},#{employeeId},#{requestId},#{requestHash},#{roomTypeId},#{roomTypeName},#{roomCount},#{bookerName},#{bookerPhone},#{checkinTime},#{checkoutTime},#{nights},#{nightlyPrice},#{totalAmount},'PENDING',#{remark})
+  </insert>
+  <update id="markCheckedIn">
+    UPDATE booking_order SET status = 'CHECKED_IN' WHERE id = #{id} AND status = 'PENDING' AND is_deleted = 0
+  </update>
+  <update id="markCancelled">
+    UPDATE booking_order SET status = 'CANCELLED', cancel_time = #{now}, cancel_by = #{employeeId}, cancel_reason = #{reason} WHERE id = #{id} AND status = 'PENDING' AND is_deleted = 0
+  </update>
+  <select id="coveringOrders" resultType="int">
+    SELECT COUNT(*) FROM booking_order WHERE room_type_id = #{roomTypeId} AND DATE(planned_checkin_time) &lt;= #{stayDate} AND DATE(planned_checkout_time) &gt; #{stayDate}
+  </select>
+</mapper>

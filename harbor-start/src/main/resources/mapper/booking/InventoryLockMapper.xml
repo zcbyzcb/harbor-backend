@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.InventoryLockMapper">
+  <select id="lockByOrderId" resultType="com.harbor.hotel.infrastructure.persistence.po.LockPO">
+    SELECT l.id, l.inventory_id AS inventoryId, l.lock_room_count AS roomCount, l.lock_status AS status FROM inventory_lock_record l JOIN room_type_inventory i ON i.id = l.inventory_id WHERE l.order_id = #{orderId} AND l.is_deleted = 0 ORDER BY i.stay_date, l.id FOR UPDATE
+  </select>
+  <insert id="insert">
+    INSERT INTO inventory_lock_record(order_id,inventory_id,lock_room_count,lock_status) VALUES(#{orderId},#{inventoryId},#{count},'locked')
+  </insert>
+  <update id="transition">
+    UPDATE inventory_lock_record SET lock_status = #{status} WHERE id = #{id} AND is_deleted = 0 AND lock_status = 'locked'
+  </update>
+</mapper>

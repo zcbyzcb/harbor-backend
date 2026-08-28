@@ -9,7 +9,7 @@ import com.harbor.hotel.app.booking.processor.*;
 import com.harbor.hotel.app.inventory.dto.InitializeDailyInventoryDTO;
 import com.harbor.hotel.app.inventory.processor.InitializeDailyInventoryProcessor;
 import com.harbor.hotel.domain.shared.DomainException;
-import com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper;
+import com.harbor.hotel.infrastructure.persistence.mapper.RoomTypeInventoryMapper;
 
 import jakarta.annotation.Resource;
 
@@ -117,7 +117,7 @@ class HotelWorkflowIT {
     @Resource
     InitializeDailyInventoryProcessor initialize;
     @Resource
-    InventoryMapper inventoryMapper;
+    RoomTypeInventoryMapper inventoryMapper;
     @Resource
     ObjectMapper json;
     @Resource
