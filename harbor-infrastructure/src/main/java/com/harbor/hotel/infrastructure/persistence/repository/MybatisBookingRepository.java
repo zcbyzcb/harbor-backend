@@ -3,6 +3,7 @@ package com.harbor.hotel.infrastructure.persistence.repository;
 import com.harbor.hotel.domain.booking.repository.BookingRepository;
 import com.harbor.hotel.domain.booking.model.*;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 import com.harbor.hotel.infrastructure.persistence.mapper.*;
 import com.harbor.hotel.infrastructure.persistence.transfer.BookingPersistenceTransfer;
 
@@ -33,7 +34,7 @@ public class MybatisBookingRepository implements BookingRepository {
     private OrderOperationLogMapper orderOperationLogMapper;
 
     private void one(int affected) {
-        if (affected != 1) throw new DomainException("INVENTORY_STATE_CONFLICT");
+        if (affected != 1) throw new DomainException(ErrorCode.INVENTORY_STATE_CONFLICT);
     }
 
     public RoomType lockType(Long id) {

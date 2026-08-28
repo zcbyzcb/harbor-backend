@@ -1,5 +1,7 @@
 package com.harbor.hotel.api.security;
 
+import com.harbor.hotel.domain.shared.ErrorCode;
+
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Bean;
@@ -61,7 +63,7 @@ public class HotelSecurityConfiguration {
                                 errors.authenticationEntryPoint(
                                                 (request, response, exception) ->
                                                         writeError(
-                                                                response, 401, "UNAUTHENTICATED"))
+                                                                response, 401, ErrorCode.UNAUTHENTICATED))
                                         .accessDeniedHandler(
                                                 (request, response, exception) ->
                                                         writeError(
@@ -73,8 +75,8 @@ public class HotelSecurityConfiguration {
                                                                                         .security
                                                                                         .web.csrf
                                                                                         .CsrfException
-                                                                        ? "CSRF_INVALID"
-                                                                        : "FORBIDDEN")))
+                                                                        ? ErrorCode.CSRF_INVALID
+                                                                        : ErrorCode.FORBIDDEN)))
                 .addFilterAfter(activeEmployeeFilter, AnonymousAuthenticationFilter.class);
         return http.build();
     }

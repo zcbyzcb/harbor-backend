@@ -6,6 +6,7 @@ import com.harbor.hotel.domain.inventory.model.InventoryState;
 import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -28,10 +29,10 @@ public final class BookingOrder {
 
     private Order lock() {
         Long typeId = bookings.orderType(id);
-        if (typeId == null) throw new DomainException("ORDER_NOT_FOUND");
-        if (bookings.lockType(typeId) == null) throw new DomainException("ROOM_TYPE_NOT_FOUND");
+        if (typeId == null) throw new DomainException(ErrorCode.ORDER_NOT_FOUND);
+        if (bookings.lockType(typeId) == null) throw new DomainException(ErrorCode.ROOM_TYPE_NOT_FOUND);
         Order order = bookings.lockOrder(id);
-        if (order == null) throw new DomainException("ORDER_NOT_FOUND");
+        if (order == null) throw new DomainException(ErrorCode.ORDER_NOT_FOUND);
         return order;
     }
 
@@ -42,9 +43,9 @@ public final class BookingOrder {
                 date = date.plusDays(1)) {
             InventorySnapshot row =
                     inventories.findByRoomTypeAndDate(order.roomTypeId(), date);
-            if (row == null) throw new DomainException("INVENTORY_NOT_READY");
+            if (row == null) throw new DomainException(ErrorCode.INVENTORY_NOT_READY);
             if (!inventories.isConsistent(row.id()))
-                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+                throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
             result.add(
                     new InventoryState(
                             row.id(),
@@ -55,7 +56,7 @@ public final class BookingOrder {
                             row.availableRooms()));
         }
         if (result.size() != order.nights())
-            throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+            throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
         return result;
     }
 
@@ -69,22 +70,22 @@ public final class BookingOrder {
                                         !ids.remove(l.inventoryId())
                                                 || l.roomCount() != order.roomCount()
                                                 || !expected.equals(l.status()))
-                || !ids.isEmpty()) throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+                || !ids.isEmpty()) throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
         return locks;
     }
 
     public Long cancel(Long employeeId, String requestKey, String reason) {
         String key = RequestFingerprint.key(requestKey);
         Order order = lock();
-        if (order.status() == BookingOrderStatus.CHECKED_IN) throw new DomainException("ORDER_STATUS_CONFLICT");
+        if (order.status() == BookingOrderStatus.CHECKED_IN) throw new DomainException(ErrorCode.ORDER_STATUS_CONFLICT);
         List<InventoryState> states = inventory(order);
         if (order.status() == BookingOrderStatus.CANCELLED) {
             locks(order, states, InventoryLockStatus.CANCELLED);
             if (bookings.auditCount(id, OrderOperation.CANCEL) != 1)
-                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+                throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
             return id;
         }
-        if (order.status() != BookingOrderStatus.PENDING) throw new DomainException("ORDER_STATUS_CONFLICT");
+        if (order.status() != BookingOrderStatus.PENDING) throw new DomainException(ErrorCode.ORDER_STATUS_CONFLICT);
         List<Lock> locks = locks(order, states, InventoryLockStatus.LOCKED);
         for (InventoryState state : states) {
             state.cancelReservation(order.roomCount());
@@ -113,16 +114,16 @@ public final class BookingOrder {
         }
         byte[] hash = RequestFingerprint.hash(fields.toArray());
         Order order = lock();
-        if (order.status() == BookingOrderStatus.CANCELLED) throw new DomainException("ORDER_STATUS_CONFLICT");
+        if (order.status() == BookingOrderStatus.CANCELLED) throw new DomainException(ErrorCode.ORDER_STATUS_CONFLICT);
         List<InventoryState> states = inventory(order);
         if (order.status() == BookingOrderStatus.CHECKED_IN) {
             locks(order, states, InventoryLockStatus.RELEASED);
             List<Checkin> records = bookings.checkins(id);
             if (records.size() != order.roomCount() || bookings.auditCount(id, OrderOperation.CHECK_IN) != 1)
-                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+                throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
             for (Checkin record : records) {
                 if (!record.employeeId().equals(employeeId) || !record.requestId().equals(key))
-                    throw new DomainException("ORDER_STATUS_CONFLICT");
+                    throw new DomainException(ErrorCode.ORDER_STATUS_CONFLICT);
                 RequestFingerprint.same(record.requestHash(), hash);
             }
             List<Detail> details =
@@ -144,13 +145,13 @@ public final class BookingOrder {
                                                                                             .equals(
                                                                                                     d
                                                                                                             .roomId()))))
-                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+                throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
             return id;
         }
-        if (order.status() != BookingOrderStatus.PENDING) throw new DomainException("ORDER_STATUS_CONFLICT");
+        if (order.status() != BookingOrderStatus.PENDING) throw new DomainException(ErrorCode.ORDER_STATUS_CONFLICT);
         LocalDateTime now = LocalDateTime.now(clock);
         if (now.isBefore(order.checkinTime()) || !now.isBefore(order.checkoutTime()))
-            throw new DomainException("CHECKIN_TIME_INVALID");
+            throw new DomainException(ErrorCode.CHECKIN_TIME_INVALID);
         List<Lock> locks = locks(order, states, InventoryLockStatus.LOCKED);
         int maxGuests = bookings.lockType(order.roomTypeId()).maxGuests();
         CheckInValidator.validateAllocations(sorted, order.roomCount(), maxGuests);
@@ -161,7 +162,7 @@ public final class BookingOrder {
                                 r ->
                                         !r.roomTypeId().equals(order.roomTypeId())
                                                 || r.physicalStatus() != RoomPhysicalStatus.READY))
-            throw new DomainException("ROOM_NOT_AVAILABLE");
+            throw new DomainException(ErrorCode.ROOM_NOT_AVAILABLE);
         List<Detail> details =
                 bookings.lockDetails(
                         states.stream().map(InventoryState::id).toList(),
@@ -174,7 +175,7 @@ public final class BookingOrder {
                                                 || d.status() != RoomInventoryDetailStatus.ACTIVE
                                                 || d.occupied() != 0
                                                 || d.checkinId() != null))
-            throw new DomainException("ROOM_NOT_AVAILABLE");
+            throw new DomainException(ErrorCode.ROOM_NOT_AVAILABLE);
         for (InventoryState state : states) {
             state.convertToCheckin(order.roomCount());
             bookings.convertReservationToCheckin(state.id(), order.roomCount());

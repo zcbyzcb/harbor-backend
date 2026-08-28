@@ -1,6 +1,7 @@
 package com.harbor.hotel.app.booking.generator;
 
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,6 @@ public final class OrderNoGenerator {
                 return String.format(Locale.ROOT, "UO%d%03d%02d", timestamp, machineId, suffix);
             }
         }
-        throw new DomainException("ORDER_NO_GENERATION_EXHAUSTED");
+        throw new DomainException(ErrorCode.ORDER_NO_GENERATION_EXHAUSTED);
     }
 }

@@ -1,6 +1,7 @@
 package com.harbor.hotel.domain.booking.model;
 
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 
 public enum InventoryLockStatus {
     LOCKED("locked"), RELEASED("release"), CANCELLED("cancel");
@@ -9,6 +10,6 @@ public enum InventoryLockStatus {
     public String code() { return code; }
     public static InventoryLockStatus fromCode(String code) {
         for (InventoryLockStatus value : values()) if (value.code.equals(code)) return value;
-        throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+        throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
     }
 }

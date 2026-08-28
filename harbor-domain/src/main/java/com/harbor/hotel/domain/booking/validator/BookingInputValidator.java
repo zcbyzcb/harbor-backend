@@ -2,6 +2,7 @@ package com.harbor.hotel.domain.booking.validator;
 
 import com.harbor.hotel.domain.booking.model.BookingInput;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 
 public final class BookingInputValidator {
     private BookingInputValidator() {}
@@ -13,10 +14,10 @@ public final class BookingInputValidator {
                 || input.bookerName() == null || input.bookerName().isBlank()
                 || input.bookerPhone() == null
                 || !input.bookerPhone().matches("[+0-9][0-9 -]{5,31}")) {
-            throw new DomainException("INVALID_ARGUMENT");
+            throw new DomainException(ErrorCode.INVALID_ARGUMENT);
         }
         if (orderNo == null || !orderNo.matches("UO\\d{18}")) {
-            throw new DomainException("INVALID_ORDER_NO");
+            throw new DomainException(ErrorCode.INVALID_ORDER_NO);
         }
     }
 }

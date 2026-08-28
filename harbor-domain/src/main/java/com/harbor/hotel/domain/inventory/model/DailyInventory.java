@@ -2,6 +2,7 @@ package com.harbor.hotel.domain.inventory.model;
 
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 
 import java.time.LocalDate;
 
@@ -12,7 +13,7 @@ public final class DailyInventory {
 
     public DailyInventory(InventoryRepository inventoryRepository, Long roomTypeId, LocalDate stayDate) {
         if (roomTypeId == null || stayDate == null) {
-            throw new DomainException("INVALID_ARGUMENT");
+            throw new DomainException(ErrorCode.INVALID_ARGUMENT);
         }
         this.inventoryRepository = inventoryRepository;
         this.roomTypeId = roomTypeId;
@@ -21,11 +22,11 @@ public final class DailyInventory {
 
     public int initialize() {
         if (!inventoryRepository.lockRoomType(roomTypeId))
-            throw new DomainException("ROOM_TYPE_NOT_FOUND");
+            throw new DomainException(ErrorCode.ROOM_TYPE_NOT_FOUND);
         java.util.List<RoomSeed> rooms =
                 inventoryRepository.findActiveRooms(roomTypeId);
         if (rooms.isEmpty()) {
-            throw new DomainException("ROOM_TYPE_NOT_FOUND");
+            throw new DomainException(ErrorCode.ROOM_TYPE_NOT_FOUND);
         }
         InventorySnapshot existing =
                 inventoryRepository.findByRoomTypeAndDate(roomTypeId, stayDate);
@@ -39,12 +40,12 @@ public final class DailyInventory {
                                     + existing.checkedInRooms()
                                     + existing.availableRooms()
                             != existing.totalRooms()) {
-                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+                throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
             }
             return 0;
         }
         if (inventoryRepository.hasCoveringOrder(roomTypeId, stayDate))
-            throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+            throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
         Long inventoryId =
                 inventoryRepository.createInventory(roomTypeId, stayDate, activeRoomCount);
         inventoryRepository.createDetails(inventoryId, roomTypeId, rooms);

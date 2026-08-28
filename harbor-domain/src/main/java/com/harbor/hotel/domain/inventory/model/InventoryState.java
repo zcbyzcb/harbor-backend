@@ -1,6 +1,7 @@
 package com.harbor.hotel.domain.inventory.model;
 
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 
 public final class InventoryState {
     private final Long id;
@@ -24,7 +25,7 @@ public final class InventoryState {
                 || checkedInRooms < 0
                 || availableRooms < 0
                 || (long) bookedRooms + checkedInRooms + availableRooms != totalRooms) {
-            throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+            throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
         }
         this.id = id;
         this.roomTypeId = roomTypeId;
@@ -36,7 +37,7 @@ public final class InventoryState {
 
     public void reserve(int roomCount) {
         if (roomCount <= 0 || availableRooms < roomCount)
-            throw new DomainException("INVENTORY_NOT_AVAILABLE");
+            throw new DomainException(ErrorCode.INVENTORY_NOT_AVAILABLE);
         bookedRooms += roomCount;
         availableRooms -= roomCount;
         verify();
@@ -44,7 +45,7 @@ public final class InventoryState {
 
     public void cancelReservation(int roomCount) {
         if (roomCount <= 0 || bookedRooms < roomCount)
-            throw new DomainException("INVENTORY_STATE_CONFLICT");
+            throw new DomainException(ErrorCode.INVENTORY_STATE_CONFLICT);
         bookedRooms -= roomCount;
         availableRooms += roomCount;
         verify();
@@ -52,7 +53,7 @@ public final class InventoryState {
 
     public void convertToCheckin(int roomCount) {
         if (roomCount <= 0 || bookedRooms < roomCount)
-            throw new DomainException("INVENTORY_STATE_CONFLICT");
+            throw new DomainException(ErrorCode.INVENTORY_STATE_CONFLICT);
         bookedRooms -= roomCount;
         checkedInRooms += roomCount;
         verify();
@@ -60,7 +61,7 @@ public final class InventoryState {
 
     private void verify() {
         if ((long) bookedRooms + checkedInRooms + availableRooms != totalRooms)
-            throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+            throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
     }
 
     public Long id() {

@@ -2,6 +2,8 @@ package com.harbor.hotel.app.dashboard.qurier;
 
 import com.harbor.hotel.app.dashboard.dto.DashboardDTO;
 import com.harbor.hotel.app.dashboard.transfer.PendingOrderReadTransfer;
+import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 import com.harbor.hotel.infrastructure.persistence.mapper.DashboardReadMapper;
 
 import jakarta.annotation.Resource;
@@ -25,7 +27,7 @@ public class GetDashboardQurier {
     public DashboardDTO query() {
         LocalDate today = LocalDate.now(clock);
         if (dashboardReadMapper.missingInventories(today) > 0)
-            throw new com.harbor.hotel.domain.shared.DomainException("INVENTORY_NOT_READY");
+            throw new DomainException(ErrorCode.INVENTORY_NOT_READY);
         return new DashboardDTO(
                 dashboardReadMapper.countCheckedInRooms(today),
                 dashboardReadMapper.countPendingCheckInRooms(today),

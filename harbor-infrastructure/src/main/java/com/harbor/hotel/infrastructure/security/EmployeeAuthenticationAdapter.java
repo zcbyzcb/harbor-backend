@@ -4,6 +4,7 @@ import com.harbor.hotel.domain.auth.AuthenticationPort;
 import com.harbor.hotel.domain.auth.EmployeeActivityPort;
 import com.harbor.hotel.domain.auth.EmployeeSessionIdentity;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 import com.harbor.hotel.infrastructure.persistence.mapper.EmployeeAuthMapper;
 
 import jakarta.annotation.Resource;
@@ -32,7 +33,7 @@ public class EmployeeAuthenticationAdapter implements AuthenticationPort, Employ
         if (employee == null || !passwordEncoder.matches(password, employee.passwordHash())) {
             loginAttemptLimiter.recordFailure(username, source);
             LOGGER.warn("operation=LOGIN result=FAILED username={}", maskUsername(username));
-            throw new DomainException("LOGIN_FAILED");
+            throw new DomainException(ErrorCode.LOGIN_FAILED);
         }
         loginAttemptLimiter.recordSuccess(username);
         EmployeeSessionIdentity identity =

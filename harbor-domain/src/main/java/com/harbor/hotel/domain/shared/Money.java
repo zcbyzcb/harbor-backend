@@ -6,7 +6,7 @@ import java.math.RoundingMode;
 public record Money(BigDecimal amount) {
     public Money {
         if (amount == null || amount.signum() < 0) {
-            throw new DomainException("INVALID_AMOUNT");
+            throw new DomainException(ErrorCode.INVALID_AMOUNT);
         }
         amount = amount.setScale(2, RoundingMode.HALF_UP);
     }

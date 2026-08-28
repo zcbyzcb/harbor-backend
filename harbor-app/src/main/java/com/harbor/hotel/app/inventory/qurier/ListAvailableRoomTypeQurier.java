@@ -4,6 +4,7 @@ import com.harbor.hotel.app.inventory.dto.AvailableRoomTypeDTO;
 import com.harbor.hotel.app.inventory.query.AvailabilityQueryDTO;
 import com.harbor.hotel.app.inventory.transfer.AvailableRoomTypeReadTransfer;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 import com.harbor.hotel.infrastructure.persistence.mapper.AvailabilityReadMapper;
 
 import jakarta.annotation.Resource;
@@ -32,11 +33,11 @@ public class ListAvailableRoomTypeQurier {
                 || query.checkinDate() == null
                 || query.checkoutDate() == null
                 || !query.checkoutDate().isAfter(query.checkinDate()))
-            throw new DomainException("INVALID_ARGUMENT");
+            throw new DomainException(ErrorCode.INVALID_ARGUMENT);
         LocalDate today = LocalDate.now(clock);
         if (query.checkinDate().isBefore(today)
                 || query.checkoutDate().isAfter(today.plusDays(windowDays))) {
-            throw new DomainException("BOOKING_WINDOW_INVALID");
+            throw new DomainException(ErrorCode.BOOKING_WINDOW_INVALID);
         }
         int nights =
                 Math.toIntExact(

@@ -3,6 +3,7 @@ package com.harbor.hotel.app.order.qurier;
 import com.harbor.hotel.app.order.dto.RoomCandidateDTO;
 import com.harbor.hotel.app.order.transfer.RoomCandidateReadTransfer;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 import com.harbor.hotel.domain.booking.model.BookingOrderStatus;
 import com.harbor.hotel.infrastructure.persistence.po.OrderSummaryPO;
 import com.harbor.hotel.infrastructure.persistence.mapper.OrderReadMapper;
@@ -21,12 +22,12 @@ public class ListAvailableRoomQurier {
     public List<RoomCandidateDTO> query(Long id) {
         OrderSummaryPO order = orderReadMapper.detail(id);
         if (order == null) {
-            throw new DomainException("ORDER_NOT_FOUND");
+            throw new DomainException(ErrorCode.ORDER_NOT_FOUND);
         }
         if (BookingOrderStatus.fromCode(order.status()) != BookingOrderStatus.PENDING)
-            throw new DomainException("ORDER_STATUS_CONFLICT");
+            throw new DomainException(ErrorCode.ORDER_STATUS_CONFLICT);
         if (orderReadMapper.missingInventory(id) > 0)
-            throw new DomainException("INVENTORY_NOT_READY");
+            throw new DomainException(ErrorCode.INVENTORY_NOT_READY);
         return orderReadMapper.availableRooms(id).stream()
                 .map(RoomCandidateReadTransfer::toDTO)
                 .toList();

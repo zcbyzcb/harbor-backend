@@ -9,6 +9,7 @@ import com.harbor.hotel.app.booking.processor.*;
 import com.harbor.hotel.app.inventory.dto.InitializeDailyInventoryDTO;
 import com.harbor.hotel.app.inventory.processor.InitializeDailyInventoryProcessor;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 import com.harbor.hotel.infrastructure.persistence.mapper.RoomTypeInventoryMapper;
 
 import jakarta.annotation.Resource;
@@ -639,7 +640,8 @@ class HotelWorkflowIT {
         jdbc.update("DELETE FROM room_type_inventory WHERE room_type_id=1 AND stay_date=?", TODAY);
         HttpResponse<String> result = http(c, "GET", "/dashboard", null, null, null);
         assertEquals(503, result.statusCode());
-        assertEquals("INVENTORY_NOT_READY", json.readTree(result.body()).path("code").asText());
+        assertEquals(
+                ErrorCode.INVENTORY_NOT_READY, json.readTree(result.body()).path("code").asText());
     }
 
     @Test

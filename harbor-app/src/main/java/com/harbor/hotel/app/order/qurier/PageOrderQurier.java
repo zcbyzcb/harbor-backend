@@ -3,6 +3,7 @@ package com.harbor.hotel.app.order.qurier;
 import com.harbor.hotel.app.order.dto.*;
 import com.harbor.hotel.app.order.transfer.*;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 import com.harbor.hotel.domain.booking.model.BookingOrderStatus;
 import com.harbor.hotel.infrastructure.persistence.mapper.OrderReadMapper;
 
@@ -25,7 +26,7 @@ public class PageOrderQurier {
                         && q.arrivalTo() != null
                         && q.arrivalTo().isBefore(q.arrivalFrom()))
                 || (q.status() != null && !q.status().isEmpty() && !isValidStatus(q.status())))
-            throw new DomainException("INVALID_ARGUMENT");
+            throw new DomainException(ErrorCode.INVALID_ARGUMENT);
         com.harbor.hotel.infrastructure.persistence.po.OrderSearchPO po =
                 OrderSearchTransfer.toPO(q);
         return new OrderPageDTO(

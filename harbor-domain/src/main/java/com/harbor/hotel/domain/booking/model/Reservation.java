@@ -6,6 +6,7 @@ import com.harbor.hotel.domain.inventory.model.InventoryState;
 import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 import com.harbor.hotel.domain.shared.StayPeriod;
 
 import java.time.Clock;
@@ -46,7 +47,7 @@ public final class Reservation {
             return replay(previous, hash);
         }
         RoomType type = bookings.lockType(input.roomTypeId());
-        if (type == null) throw new DomainException("ROOM_TYPE_NOT_FOUND");
+        if (type == null) throw new DomainException(ErrorCode.ROOM_TYPE_NOT_FOUND);
         previous = bookings.findRequest(employeeId, key);
         if (previous != null) {
             return replay(previous, hash);
@@ -54,18 +55,18 @@ public final class Reservation {
         LocalDate today = LocalDate.now(clock);
         if (input.checkinDate().isBefore(today)
                 || input.checkoutDate().isAfter(today.plusDays(window)))
-            throw new DomainException("BOOKING_WINDOW_INVALID");
+            throw new DomainException(ErrorCode.BOOKING_WINDOW_INVALID);
         if (type.price().compareTo(input.confirmedPrice()) != 0)
-            throw new DomainException("PRICE_CHANGED");
+            throw new DomainException(ErrorCode.PRICE_CHANGED);
         ArrayList<InventoryState> states = new ArrayList<>();
         for (LocalDate date = input.checkinDate();
                 date.isBefore(input.checkoutDate());
                 date = date.plusDays(1)) {
             InventorySnapshot inventory =
                     inventories.findByRoomTypeAndDate(type.id(), date);
-            if (inventory == null) throw new DomainException("INVENTORY_NOT_READY");
+            if (inventory == null) throw new DomainException(ErrorCode.INVENTORY_NOT_READY);
             if (!inventories.isConsistent(inventory.id()))
-                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+                throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
             InventoryState state =
                     new InventoryState(
                             inventory.id(),
@@ -81,7 +82,7 @@ public final class Reservation {
         java.math.BigDecimal total =
                 type.price()
                         .multiply(java.math.BigDecimal.valueOf((long) nights * input.roomCount()));
-        if (total.precision() - total.scale() > 10) throw new DomainException("INVALID_AMOUNT");
+        if (total.precision() - total.scale() > 10) throw new DomainException(ErrorCode.INVALID_AMOUNT);
         Long id =
                 bookings.insertOrder(
                         new NewOrder(
@@ -117,7 +118,7 @@ public final class Reservation {
             InventorySnapshot row =
                     inventories.findByRoomTypeAndDate(previous.roomTypeId(), date);
             if (row == null || !inventories.isConsistent(row.id()))
-                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+                throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
             ids.add(row.id());
         }
         InventoryLockStatus expected =
@@ -137,7 +138,7 @@ public final class Reservation {
                                                 || l.roomCount() != previous.roomCount())
                 || !ids.isEmpty()
                 || bookings.auditCount(previous.id(), OrderOperation.CREATE) != 1)
-            throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+            throw new DomainException(ErrorCode.INVENTORY_DATA_INCONSISTENT);
         return previous.id();
     }
 }

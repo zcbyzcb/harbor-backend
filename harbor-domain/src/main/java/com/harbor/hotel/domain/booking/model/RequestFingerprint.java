@@ -1,6 +1,7 @@
 package com.harbor.hotel.domain.booking.model;
 
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -19,7 +20,7 @@ final class RequestFingerprint {
                 throw new IllegalArgumentException();
             return key.toLowerCase(java.util.Locale.ROOT);
         } catch (IllegalArgumentException ex) {
-            throw new DomainException("INVALID_IDEMPOTENCY_KEY");
+            throw new DomainException(ErrorCode.INVALID_IDEMPOTENCY_KEY);
         }
     }
 
@@ -39,6 +40,6 @@ final class RequestFingerprint {
 
     static void same(byte[] expected, byte[] actual) {
         if (!MessageDigest.isEqual(expected, actual))
-            throw new DomainException("IDEMPOTENCY_CONFLICT");
+            throw new DomainException(ErrorCode.IDEMPOTENCY_CONFLICT);
     }
 }

@@ -5,6 +5,7 @@ import com.harbor.hotel.app.auth.dto.LoginDTO;
 import com.harbor.hotel.app.auth.transfer.EmployeeTransfer;
 import com.harbor.hotel.domain.auth.*;
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 
 import jakarta.annotation.Resource;
 
@@ -22,7 +23,7 @@ public class LoginProcessor {
                 || command.password().isBlank()
                 || command.password().getBytes(java.nio.charset.StandardCharsets.UTF_8).length
                         > 72) {
-            throw new DomainException("LOGIN_FAILED");
+            throw new DomainException(ErrorCode.LOGIN_FAILED);
         }
         return EmployeeTransfer.toDTO(
                 authenticationPort.authenticate(

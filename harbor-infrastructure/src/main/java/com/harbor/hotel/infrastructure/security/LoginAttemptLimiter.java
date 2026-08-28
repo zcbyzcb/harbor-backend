@@ -1,6 +1,7 @@
 package com.harbor.hotel.infrastructure.security;
 
 import com.harbor.hotel.domain.shared.DomainException;
+import com.harbor.hotel.domain.shared.ErrorCode;
 
 import jakarta.annotation.Resource;
 
@@ -38,11 +39,11 @@ public class LoginAttemptLimiter {
         Instant now = clock.instant();
         Attempt value = attempts.get(key);
         if (value != null && value.lockedUntil().isAfter(now))
-            throw new DomainException("LOGIN_RATE_LIMITED");
+            throw new DomainException(ErrorCode.LOGIN_RATE_LIMITED);
         if (attempts.size() >= MAX_KEYS) {
             attempts.entrySet().removeIf(entry -> !entry.getValue().expires().isAfter(now));
             if (attempts.size() >= MAX_KEYS && !attempts.containsKey(key))
-                throw new DomainException("LOGIN_RATE_LIMITED");
+                throw new DomainException(ErrorCode.LOGIN_RATE_LIMITED);
         }
     }
 

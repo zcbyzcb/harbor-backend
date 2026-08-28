@@ -6,7 +6,7 @@ import java.time.temporal.ChronoUnit;
 public record StayPeriod(LocalDate checkinDate, LocalDate checkoutDate) {
     public StayPeriod {
         if (checkinDate == null || checkoutDate == null || !checkoutDate.isAfter(checkinDate)) {
-            throw new DomainException("INVALID_STAY_PERIOD");
+            throw new DomainException(ErrorCode.INVALID_STAY_PERIOD);
         }
     }
 
