@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.OrderReadMapper">
- <sql id="columns">CAST(id AS CHAR) id,order_no orderNo,booker_name bookerName,booker_phone bookerPhone,status,room_count roomCount,room_type_name_snapshot roomTypeName,DATE_FORMAT(planned_checkin_time,'%Y-%m-%dT%H:%i:%s+08:00') plannedCheckinTime,DATE_FORMAT(planned_checkout_time,'%Y-%m-%dT%H:%i:%s+08:00') plannedCheckoutTime,nights,CAST(nightly_price AS CHAR) nightlyPrice,CAST(total_amount AS CHAR) totalAmount,remark,DATE_FORMAT(cancel_time,'%Y-%m-%dT%H:%i:%s+08:00') cancelTime,cancel_reason cancelReason,(SELECT rt.max_guests FROM room_type rt WHERE rt.id=booking_order.room_type_id) maxGuests</sql>
- <sql id="filters">is_deleted=0
+  <sql id="columns">CAST(id AS CHAR) id,order_no orderNo,booker_name bookerName,booker_phone bookerPhone,status,room_count roomCount,room_type_name_snapshot roomTypeName,DATE_FORMAT(planned_checkin_time,'%Y-%m-%dT%H:%i:%s+08:00') plannedCheckinTime,DATE_FORMAT(planned_checkout_time,'%Y-%m-%dT%H:%i:%s+08:00') plannedCheckoutTime,nights,CAST(nightly_price AS CHAR) nightlyPrice,CAST(total_amount AS CHAR) totalAmount,remark,DATE_FORMAT(cancel_time,'%Y-%m-%dT%H:%i:%s+08:00') cancelTime,cancel_reason cancelReason,(SELECT rt.max_guests FROM room_type rt WHERE rt.id=booking_order.room_type_id) maxGuests</sql>
+  <sql id="filters">is_deleted=0
  <if test="orderNo != null and orderNo != ''">AND order_no=#{orderNo}</if>
  <if test="phone != null and phone != ''">AND booker_phone=#{phone}</if>
  <if test="name != null and name != ''">AND booker_name LIKE CONCAT('%',#{name},'%')</if>
@@ -10,12 +11,12 @@
  <if test="arrivalTo != null">AND planned_checkin_time &lt; DATE_ADD(#{arrivalTo},INTERVAL 1 DAY)</if>
  <if test="requestId != null and requestId != ''">AND booking_request_id=#{requestId} AND create_by=#{employeeId}</if>
  </sql>
- <select id="page" resultType="com.harbor.hotel.infrastructure.persistence.po.OrderSummaryPO">SELECT <include refid="columns"/> FROM booking_order WHERE <include refid="filters"/> ORDER BY create_time DESC,id DESC LIMIT #{limit} OFFSET #{offset}</select>
- <select id="count" resultType="long">SELECT COUNT(*) FROM booking_order WHERE <include refid="filters"/></select>
- <select id="detail" resultType="com.harbor.hotel.infrastructure.persistence.po.OrderSummaryPO">SELECT <include refid="columns"/> FROM booking_order WHERE id=#{id} AND is_deleted=0</select>
- <select id="registeredGuests" resultType="com.harbor.hotel.infrastructure.persistence.po.RegisteredGuestPO">SELECT CAST(c.room_id AS CHAR) roomId,c.room_no_snapshot roomNo,DATE_FORMAT(c.checkin_time,'%Y-%m-%dT%H:%i:%s+08:00') checkinTime,g.guest_seq guestSeq,g.guest_name name,g.phone FROM checkin_record c JOIN checkin_guest g ON g.checkin_id=c.id AND g.is_deleted=0 WHERE c.order_id=#{id} AND c.is_deleted=0 ORDER BY c.room_id,g.guest_seq</select>
- <select id="missingInventory" resultType="int">SELECT o.nights-COUNT(i.id) FROM booking_order o LEFT JOIN room_type_inventory i ON i.room_type_id=o.room_type_id AND i.stay_date &gt;= DATE(o.planned_checkin_time) AND i.stay_date &lt; DATE(o.planned_checkout_time) AND i.is_deleted=0 WHERE o.id=#{id} GROUP BY o.id</select>
- <select id="availableRooms" resultType="com.harbor.hotel.infrastructure.persistence.po.RoomCandidatePO">
+  <select id="page" resultType="com.harbor.hotel.infrastructure.persistence.po.OrderSummaryPO">SELECT <include refid="columns"/> FROM booking_order WHERE <include refid="filters"/> ORDER BY create_time DESC,id DESC LIMIT #{limit} OFFSET #{offset}</select>
+  <select id="count" resultType="long">SELECT COUNT(*) FROM booking_order WHERE <include refid="filters"/></select>
+  <select id="detail" resultType="com.harbor.hotel.infrastructure.persistence.po.OrderSummaryPO">SELECT <include refid="columns"/> FROM booking_order WHERE id=#{id} AND is_deleted=0</select>
+  <select id="registeredGuests" resultType="com.harbor.hotel.infrastructure.persistence.po.RegisteredGuestPO">SELECT CAST(c.room_id AS CHAR) roomId,c.room_no_snapshot roomNo,DATE_FORMAT(c.checkin_time,'%Y-%m-%dT%H:%i:%s+08:00') checkinTime,g.guest_seq guestSeq,g.guest_name name,g.phone FROM checkin_record c JOIN checkin_guest g ON g.checkin_id=c.id AND g.is_deleted=0 WHERE c.order_id=#{id} AND c.is_deleted=0 ORDER BY c.room_id,g.guest_seq</select>
+  <select id="missingInventory" resultType="int">SELECT o.nights-COUNT(i.id) FROM booking_order o LEFT JOIN room_type_inventory i ON i.room_type_id=o.room_type_id AND i.stay_date &gt;= DATE(o.planned_checkin_time) AND i.stay_date &lt; DATE(o.planned_checkout_time) AND i.is_deleted=0 WHERE o.id=#{id} GROUP BY o.id</select>
+  <select id="availableRooms" resultType="com.harbor.hotel.infrastructure.persistence.po.RoomCandidatePO">
  SELECT CAST(d.room_id AS CHAR) roomId,d.room_no roomNo,r.floor_label floorLabel FROM booking_order o
  JOIN room_type_inventory i ON i.room_type_id=o.room_type_id AND i.stay_date &gt;= DATE(o.planned_checkin_time) AND i.stay_date &lt; DATE(o.planned_checkout_time) AND i.is_deleted=0
  JOIN room_inventory_detail d ON d.inventory_id=i.id AND d.room_type_id=o.room_type_id AND d.is_deleted=0 AND d.status='ACTIVE' AND d.is_occupied=0 AND d.checkin_record_id IS NULL

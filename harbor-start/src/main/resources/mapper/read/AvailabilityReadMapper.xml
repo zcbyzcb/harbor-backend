@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.AvailabilityReadMapper">
-    <select id="list" resultType="com.harbor.hotel.infrastructure.persistence.po.AvailableRoomTypePO">
+  <select id="list" resultType="com.harbor.hotel.infrastructure.persistence.po.AvailableRoomTypePO">
         SELECT CAST(rt.id AS CHAR) AS roomTypeId, rt.type_code AS typeCode, rt.type_name AS typeName,
                rt.bed_type AS bedType, rt.max_guests AS maxGuests, rt.base_price AS nightlyPrice,
                COALESCE(MIN(i.available_rooms), 0) AS availableRooms,
@@ -18,4 +18,3 @@
         ORDER BY rt.id
     </select>
 </mapper>
-

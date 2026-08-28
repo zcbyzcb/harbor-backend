@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper">
-    <select id="findActiveRoomTypes" resultType="com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper$RoomTypePO">
+  <select id="findActiveRoomTypes" resultType="com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper$RoomTypePO">
         SELECT id FROM room_type WHERE is_deleted = 0 ORDER BY id
     </select>
-    <select id="findActiveRooms" resultType="com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper$RoomPO">
+  <select id="findActiveRooms" resultType="com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper$RoomPO">
         SELECT id, room_no AS roomNo, physical_status AS physicalStatus
         FROM room WHERE room_type_id = #{roomTypeId} AND is_deleted = 0 ORDER BY id
     </select>
-    <select id="findByRoomTypeAndDate" resultType="com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper$InventoryPO">
+  <select id="findByRoomTypeAndDate" resultType="com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper$InventoryPO">
         SELECT i.id, i.total_rooms AS totalRooms, i.booked_rooms AS bookedRooms,
                i.checked_in_rooms AS checkedInRooms, i.available_rooms AS availableRooms,
                (SELECT COUNT(*) FROM room_inventory_detail d WHERE d.inventory_id = i.id AND d.is_deleted = 0) AS detailCount
@@ -16,11 +16,11 @@
         WHERE i.room_type_id = #{roomTypeId} AND i.stay_date = #{stayDate} AND i.is_deleted = 0
         FOR UPDATE
     </select>
-    <insert id="insertInventory" useGeneratedKeys="true" keyProperty="id">
+  <insert id="insertInventory" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO room_type_inventory (room_type_id, stay_date, total_rooms, booked_rooms, checked_in_rooms, available_rooms)
         VALUES (#{roomTypeId}, #{stayDate}, #{totalRooms}, 0, 0, #{availableRooms})
     </insert>
-    <insert id="insertDetails">
+  <insert id="insertDetails">
         INSERT INTO room_inventory_detail (inventory_id, room_type_id, room_id, room_no, status, is_occupied)
         VALUES
         <foreach collection="rooms" item="room" separator=",">
@@ -28,14 +28,14 @@
              <choose><when test="room.physicalStatus != 'OUT_OF_SERVICE'">'ACTIVE'</when><otherwise>'OUT_OF_SERVICE'</otherwise></choose>, 0)
         </foreach>
     </insert>
-    <select id="lockRoomType" resultType="long">
+  <select id="lockRoomType" resultType="long">
         SELECT id FROM room_type WHERE id=#{roomTypeId} AND is_deleted=0 FOR UPDATE
     </select>
-    <select id="coveringOrders" resultType="int">
+  <select id="coveringOrders" resultType="int">
         SELECT COUNT(*) FROM booking_order WHERE room_type_id=#{roomTypeId}
         AND DATE(planned_checkin_time) &lt;= #{stayDate} AND DATE(planned_checkout_time) &gt; #{stayDate}
     </select>
-    <select id="isConsistent" resultType="boolean">
+  <select id="isConsistent" resultType="boolean">
         SELECT i.is_deleted=0
           AND i.total_rooms=i.booked_rooms+i.checked_in_rooms+i.available_rooms
           AND i.total_rooms=(SELECT COUNT(*) FROM room_inventory_detail d WHERE d.inventory_id=i.id AND d.status='ACTIVE' AND d.is_deleted=0)
@@ -59,4 +59,3 @@
         FROM room_type_inventory i WHERE i.id=#{inventoryId}
     </select>
 </mapper>
-
