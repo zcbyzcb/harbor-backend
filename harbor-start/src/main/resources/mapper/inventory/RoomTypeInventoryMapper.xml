@@ -11,6 +11,64 @@
     UPDATE room_type_inventory SET booked_rooms = #{booked}, checked_in_rooms = #{checkedIn}, available_rooms = #{available} WHERE id = #{id} AND is_deleted = 0 AND total_rooms = #{booked} + #{checkedIn} + #{available}
   </update>
   <select id="isConsistent" resultType="boolean">
-    SELECT i.is_deleted = 0 AND i.total_rooms = i.booked_rooms + i.checked_in_rooms + i.available_rooms FROM room_type_inventory i WHERE i.id = #{inventoryId}
+    SELECT i.is_deleted = 0
+      AND i.total_rooms = i.booked_rooms + i.checked_in_rooms + i.available_rooms
+      AND i.total_rooms = (
+        SELECT COUNT(*) FROM room_inventory_detail d
+        WHERE d.inventory_id = i.id AND d.status = 'ACTIVE' AND d.is_deleted = 0
+      )
+      AND i.checked_in_rooms = (
+        SELECT COUNT(*) FROM room_inventory_detail d
+        WHERE d.inventory_id = i.id AND d.is_occupied = 1 AND d.is_deleted = 0
+      )
+      AND i.booked_rooms = (
+        SELECT COALESCE(SUM(l.lock_room_count), 0) FROM inventory_lock_record l
+        WHERE l.inventory_id = i.id AND l.lock_status = 'locked' AND l.is_deleted = 0
+      )
+      AND i.checked_in_rooms = (
+        SELECT COALESCE(SUM(l.lock_room_count), 0) FROM inventory_lock_record l
+        WHERE l.inventory_id = i.id AND l.lock_status = 'release' AND l.is_deleted = 0
+      )
+      AND (SELECT COUNT(*) FROM room_inventory_detail d WHERE d.inventory_id = i.id) = (
+        SELECT COUNT(*) FROM room r WHERE r.room_type_id = i.room_type_id AND r.is_deleted = 0
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM room_inventory_detail d
+        LEFT JOIN room r ON r.id = d.room_id
+        LEFT JOIN checkin_record c ON c.id = d.checkin_record_id
+        WHERE d.inventory_id = i.id
+          AND (d.is_deleted != 0 OR r.id IS NULL OR r.is_deleted != 0
+            OR d.room_type_id != i.room_type_id OR r.room_type_id != i.room_type_id
+            OR d.room_no != r.room_no OR d.status NOT IN ('ACTIVE', 'OUT_OF_SERVICE')
+            OR d.is_occupied NOT IN (0, 1)
+            OR (d.is_occupied = 0 AND d.checkin_record_id IS NOT NULL)
+            OR (d.is_occupied = 1 AND (d.status != 'ACTIVE' OR c.id IS NULL
+              OR c.is_deleted != 0 OR c.room_id != d.room_id
+              OR c.room_type_id != i.room_type_id
+              OR NOT EXISTS (
+                SELECT 1 FROM inventory_lock_record cl
+                WHERE cl.order_id = c.order_id AND cl.inventory_id = i.id
+                  AND cl.lock_status = 'release' AND cl.is_deleted = 0
+              ))))
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM inventory_lock_record l
+        LEFT JOIN booking_order o ON o.id = l.order_id
+        WHERE l.inventory_id = i.id
+          AND (l.is_deleted != 0 OR o.id IS NULL OR o.is_deleted != 0
+            OR o.room_type_id != i.room_type_id OR l.lock_room_count != o.room_count
+            OR i.stay_date &lt; DATE(o.planned_checkin_time)
+            OR i.stay_date &gt;= DATE(o.planned_checkout_time)
+            OR l.lock_status != CASE o.status
+              WHEN 'PENDING' THEN 'locked'
+              WHEN 'CHECKED_IN' THEN 'release'
+              WHEN 'CANCELLED' THEN 'cancel'
+              ELSE 'invalid'
+            END)
+      )
+    FROM room_type_inventory i
+    WHERE i.id = #{inventoryId}
   </select>
 </mapper>
