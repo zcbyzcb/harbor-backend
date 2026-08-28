@@ -28,7 +28,8 @@ public class PageOrderQurier {
                         && !java.util.Set.of("PENDING", "CHECKED_IN", "CANCELLED")
                                 .contains(q.status())))
             throw new DomainException("INVALID_ARGUMENT");
-        var po = OrderSearchTransfer.toPO(q);
+        com.harbor.hotel.infrastructure.persistence.po.OrderSearchPO po =
+                OrderSearchTransfer.toPO(q);
         return new OrderPageDTO(
                 mapper.page(po).stream().map(OrderSummaryReadTransfer::toDTO).toList(),
                 mapper.count(po),

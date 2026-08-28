@@ -22,11 +22,13 @@ public final class DailyInventory {
     public int initialize() {
         if (!inventoryRepository.lockRoomType(roomTypeId))
             throw new DomainException("ROOM_TYPE_NOT_FOUND");
-        var rooms = inventoryRepository.findActiveRooms(roomTypeId);
+        java.util.List<InventoryRepository.RoomSeed> rooms =
+                inventoryRepository.findActiveRooms(roomTypeId);
         if (rooms.isEmpty()) {
             throw new DomainException("ROOM_TYPE_NOT_FOUND");
         }
-        var existing = inventoryRepository.findByRoomTypeAndDate(roomTypeId, stayDate);
+        InventoryRepository.InventorySnapshot existing =
+                inventoryRepository.findByRoomTypeAndDate(roomTypeId, stayDate);
         int activeRoomCount =
                 Math.toIntExact(
                         rooms.stream().filter(InventoryRepository.RoomSeed::active).count());

@@ -61,8 +61,8 @@ class HotelWorkflowIT {
     static void database(DynamicPropertyRegistry registry) throws Exception {
         root = Path.of("").toAbsolutePath();
         while (!Files.exists(root.resolve("db/schema.sql"))) root = root.getParent();
-        try (var connection = DriverManager.getConnection(ADMIN, USER, PASSWORD);
-                var statement = connection.createStatement()) {
+        try (Connection connection = DriverManager.getConnection(ADMIN, USER, PASSWORD);
+                Statement statement = connection.createStatement()) {
             statement.execute(
                     "CREATE DATABASE " + DB + " CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci");
             connection.setCatalog(DB);
@@ -77,8 +77,8 @@ class HotelWorkflowIT {
 
     @AfterAll
     static void dropDatabase() throws Exception {
-        try (var c = DriverManager.getConnection(ADMIN, USER, PASSWORD);
-                var s = c.createStatement()) {
+        try (Connection c = DriverManager.getConnection(ADMIN, USER, PASSWORD);
+                Statement s = c.createStatement()) {
             s.execute("DROP DATABASE " + DB);
         }
     }
@@ -139,7 +139,7 @@ class HotelWorkflowIT {
                         "room",
                         "room_type",
                         "sys_employee")) jdbc.execute("TRUNCATE TABLE " + table);
-        try (var c = jdbc.getDataSource().getConnection()) {
+        try (Connection c = jdbc.getDataSource().getConnection()) {
             ScriptUtils.executeSqlScript(
                     c, new FileSystemResource(root.resolve("db/seed_base_data.sql")));
         }
@@ -252,7 +252,7 @@ class HotelWorkflowIT {
     @Test
     void multiRoomCheckinReplayAndCancelRejection() {
         Long id = book(2);
-        var cmd = checkRequest(id, UUID.randomUUID().toString(), 101L, 102L);
+        CheckInCommandDTO cmd = checkRequest(id, UUID.randomUUID().toString(), 101L, 102L);
         checkIn.process(cmd);
         checkIn.process(cmd);
         assertEquals(2, jdbc.queryForObject("SELECT COUNT(*) FROM checkin_record", Integer.class));
@@ -295,7 +295,7 @@ class HotelWorkflowIT {
     @Test
     void lastRoomConcurrentBookingDoesNotOversell() throws Exception {
         book(3);
-        var results = concurrent(() -> book(1), () -> book(1));
+        List<Object> results = concurrent(() -> book(1), () -> book(1));
         assertEquals(1, results.stream().filter(Long.class::isInstance).count());
         assertEquals(2, jdbc.queryForObject("SELECT COUNT(*) FROM booking_order", Integer.class));
         invariant();
@@ -303,8 +303,8 @@ class HotelWorkflowIT {
 
     @Test
     void simultaneousSameKeyReturnsSameOrder() throws Exception {
-        var command = request(2, UUID.randomUUID().toString());
-        var results = concurrent(() -> create.process(command), () -> create.process(command));
+        BookingCommandDTO command = request(2, UUID.randomUUID().toString());
+        List<Object> results = concurrent(() -> create.process(command), () -> create.process(command));
         assertInstanceOf(Long.class, results.getFirst());
         assertEquals(results.get(0), results.get(1));
         invariant();
@@ -313,7 +313,7 @@ class HotelWorkflowIT {
     @Test
     void checkinVersusCancelHasExactlyOneWinner() throws Exception {
         Long id = book(2);
-        var results =
+        List<Object> results =
                 concurrent(
                         () ->
                                 checkIn.process(
@@ -389,10 +389,10 @@ class HotelWorkflowIT {
     }
 
     List<Object> concurrent(Callable<Long> first, Callable<Long> second) throws Exception {
-        try (var pool = Executors.newFixedThreadPool(2)) {
-            var barrier = new CyclicBarrier(2);
+        try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
+            CyclicBarrier barrier = new CyclicBarrier(2);
             List<Future<Object>> futures = new ArrayList<>();
-            for (var call : List.of(first, second))
+            for (Callable<Long> call : List.of(first, second))
                 futures.add(
                         pool.submit(
                                 () -> {
@@ -418,7 +418,7 @@ class HotelWorkflowIT {
     HttpResponse<String> http(
             HttpClient client, String method, String path, String body, String token, String key)
             throws Exception {
-        var request =
+        HttpRequest.Builder request =
                 HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/api" + path))
                         .header("Content-Type", "application/json");
         if (token != null) request.header("X-CSRF-TOKEN", token);
@@ -438,7 +438,7 @@ class HotelWorkflowIT {
 
     @Test
     void realHttpAuthenticationQueriesBookingDashboardAndLogout() throws Exception {
-        var c = client();
+        HttpClient c = client();
         assertEquals(401, http(c, "GET", "/orders", null, null, null).statusCode());
         assertEquals(403, http(c, "POST", "/auth/login", "{}", null, null).statusCode());
         String token = csrf(c);
@@ -454,7 +454,7 @@ class HotelWorkflowIT {
                         .statusCode());
         assertEquals(200, http(c, "GET", "/auth/me", null, null, null).statusCode());
         token = csrf(c);
-        var availability =
+        HttpResponse<String> availability =
                 http(
                         c,
                         "GET",
@@ -468,11 +468,11 @@ class HotelWorkflowIT {
         String body =
                 "{\"roomTypeId\":\"1\",\"checkinDate\":\"2026-08-28\",\"checkoutDate\":\"2026-08-30\",\"roomCount\":2,\"bookerName\":\"测试客人\",\"bookerPhone\":\"13800000000\",\"confirmedPrice\":\"199.00\"}";
         String key = UUID.randomUUID().toString();
-        var response = http(c, "POST", "/booking_orders", body, token, key);
+        HttpResponse<String> response = http(c, "POST", "/booking_orders", body, token, key);
         assertEquals(200, response.statusCode(), response.body());
         assertEquals(200, http(c, "POST", "/booking_orders", body, token, key).statusCode());
         String id = json.readTree(response.body()).at("/data/orderId").asText();
-        var page =
+        HttpResponse<String> page =
                 http(
                         c,
                         "GET",
@@ -495,12 +495,12 @@ class HotelWorkflowIT {
                                         .body())
                         .at("/data")
                         .size());
-        var dash = json.readTree(http(c, "GET", "/dashboard", null, null, null).body());
+        JsonNode dash = json.readTree(http(c, "GET", "/dashboard", null, null, null).body());
         assertEquals(2, dash.at("/data/pendingCheckInRooms").asInt());
         assertEquals(10, dash.at("/data/availableRooms").asInt());
         String checkBody =
                 "{\"rooms\":[{\"roomId\":\"101\",\"guests\":[{\"name\":\"甲\"}]},{\"roomId\":\"102\",\"guests\":[{\"name\":\"乙\"}]}]}";
-        var check =
+        HttpResponse<String> check =
                 http(
                         c,
                         "POST",
@@ -525,7 +525,7 @@ class HotelWorkflowIT {
 
     @Test
     void deletedEmployeeAndMissingInventoryFailClosed() throws Exception {
-        var c = client();
+        HttpClient c = client();
         String token = csrf(c);
         http(
                 c,
@@ -542,7 +542,7 @@ class HotelWorkflowIT {
     void bookingAndCheckinReplayAfterTheWindowMoved() {
         String bookingKey = UUID.randomUUID().toString();
         Long id = create.process(request(1, bookingKey));
-        var command = checkRequest(id, UUID.randomUUID().toString(), 101L);
+        CheckInCommandDTO command = checkRequest(id, UUID.randomUUID().toString(), 101L);
         checkIn.process(command);
         NOW.set(Instant.parse("2026-09-10T05:00:00Z"));
         assertEquals(id, create.process(request(1, bookingKey)));
@@ -557,7 +557,7 @@ class HotelWorkflowIT {
         jdbc.update("UPDATE room_type SET base_price=299 WHERE id=1");
         assertEquals(id, create.process(request(1, key)));
         assertThrows(DomainException.class, () -> book(1));
-        var outOfWindow =
+        BookingCommandDTO outOfWindow =
                 new BookingCommandDTO(
                         1L,
                         TODAY.plusDays(6),
@@ -630,21 +630,21 @@ class HotelWorkflowIT {
 
     @Test
     void missingInventoryDashboardReturnsNotReady() throws Exception {
-        var c = client();
+        HttpClient c = client();
         String token = csrf(c);
         String credentials =
                 json.writeValueAsString(
                         Map.of("username", "frontdesk", "password", "Hotel-Test-Only-2026"));
         assertEquals(200, http(c, "POST", "/auth/login", credentials, token, null).statusCode());
         jdbc.update("DELETE FROM room_type_inventory WHERE room_type_id=1 AND stay_date=?", TODAY);
-        var result = http(c, "GET", "/dashboard", null, null, null);
+        HttpResponse<String> result = http(c, "GET", "/dashboard", null, null, null);
         assertEquals(503, result.statusCode());
         assertEquals("INVENTORY_NOT_READY", json.readTree(result.body()).path("code").asText());
     }
 
     @Test
     void loginFailuresAreLimitedAndCsrfRotatesOnAuthentication() throws Exception {
-        var c = client();
+        HttpClient c = client();
         String token = csrf(c);
         String username = "missing_" + UUID.randomUUID();
         String body =

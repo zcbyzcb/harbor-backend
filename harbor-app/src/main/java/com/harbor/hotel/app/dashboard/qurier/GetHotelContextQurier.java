@@ -18,7 +18,7 @@ public class GetHotelContextQurier {
     private int days;
 
     public HotelContextDTO query() {
-        var now = ZonedDateTime.now(clock);
+        ZonedDateTime now = ZonedDateTime.now(clock);
         return new HotelContextDTO(
                 now.toLocalDate().toString(),
                 now.toOffsetDateTime().toString(),

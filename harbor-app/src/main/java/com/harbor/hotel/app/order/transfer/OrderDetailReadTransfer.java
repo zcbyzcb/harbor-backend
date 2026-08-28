@@ -10,14 +10,14 @@ public final class OrderDetailReadTransfer {
     private OrderDetailReadTransfer() {}
 
     public static OrderDetailDTO toDTO(OrderSummaryPO order, List<RegisteredGuestPO> rows) {
-        var grouped =
+        Map<String, List<RegisteredGuestPO>> grouped =
                 rows.stream()
                         .collect(
                                 Collectors.groupingBy(
                                         RegisteredGuestPO::roomId,
                                         LinkedHashMap::new,
                                         Collectors.toList()));
-        var rooms =
+        List<RegisteredRoomDTO> rooms =
                 grouped.values().stream()
                         .map(
                                 list ->

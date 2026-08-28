@@ -9,7 +9,8 @@ import org.junit.jupiter.api.Test;
 class ArchitectureTest {
     @Test
     void domainHasNoFrameworkAndInfrastructureHasNoUpperLayerDependency() {
-        var classes = new ClassFileImporter().importPackages("com.harbor.hotel");
+        com.tngtech.archunit.core.domain.JavaClasses classes =
+                new ClassFileImporter().importPackages("com.harbor.hotel");
         noClasses()
                 .that()
                 .resideInAPackage("..domain..")

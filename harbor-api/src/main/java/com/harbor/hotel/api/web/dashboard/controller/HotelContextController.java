@@ -15,7 +15,7 @@ public class HotelContextController {
 
     @GetMapping("/api/hotel-context")
     public ApiResponse<HotelContextVO> context() {
-        var d = qurier.query();
+        com.harbor.hotel.app.dashboard.dto.HotelContextDTO d = qurier.query();
         return ApiResponse.success(
                 new HotelContextVO(
                         d.hotelDate(), d.serverTime(), d.lastCheckoutDate(), d.windowDays()));

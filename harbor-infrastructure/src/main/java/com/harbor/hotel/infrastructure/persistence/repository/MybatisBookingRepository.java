@@ -38,7 +38,8 @@ public class MybatisBookingRepository implements BookingRepository {
     }
 
     public Long insertOrder(NewOrder order) {
-        var row = BookingPersistenceTransfer.toPO(order);
+        com.harbor.hotel.infrastructure.persistence.po.NewOrderPO row =
+                BookingPersistenceTransfer.toPO(order);
         one(mapper.insertOrder(row));
         return row.getId();
     }
@@ -76,7 +77,8 @@ public class MybatisBookingRepository implements BookingRepository {
     }
 
     public Long insertCheckin(NewCheckin checkin) {
-        var row = BookingPersistenceTransfer.toPO(checkin);
+        com.harbor.hotel.infrastructure.persistence.po.NewCheckinPO row =
+                BookingPersistenceTransfer.toPO(checkin);
         one(mapper.insertCheckin(row));
         return row.getId();
     }

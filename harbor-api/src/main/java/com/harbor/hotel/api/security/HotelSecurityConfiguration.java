@@ -19,7 +19,7 @@ public class HotelSecurityConfiguration {
     @Bean
     org.springframework.boot.web.servlet.FilterRegistrationBean<ActiveEmployeeFilter>
             disableDuplicateFilter(ActiveEmployeeFilter filter) {
-        var registration =
+        org.springframework.boot.web.servlet.FilterRegistrationBean<ActiveEmployeeFilter> registration =
                 new org.springframework.boot.web.servlet.FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;

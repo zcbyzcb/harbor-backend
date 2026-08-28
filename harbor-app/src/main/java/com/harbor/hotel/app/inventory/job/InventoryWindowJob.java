@@ -75,10 +75,11 @@ public class InventoryWindowJob {
         LocalDate today = LocalDate.now(clock);
         List<String> failures = new ArrayList<>();
         int created = 0, skipped = 0;
-        var ids = types.query();
+        java.util.List<Long> ids = types.query();
         for (Long id : ids)
             for (int offset = 0; offset < days; offset++) {
-                var command = new InitializeDailyInventoryDTO(id, today.plusDays(offset));
+                InitializeDailyInventoryDTO command =
+                        new InitializeDailyInventoryDTO(id, today.plusDays(offset));
                 try {
                     if (initializeWithRetry(command) == 1) created++;
                     else skipped++;

@@ -17,7 +17,7 @@ public class GetOrderDetailQurier {
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public OrderDetailDTO query(Long id) {
-        var order = mapper.detail(id);
+        com.harbor.hotel.infrastructure.persistence.po.OrderSummaryPO order = mapper.detail(id);
         if (order == null) throw new DomainException("ORDER_NOT_FOUND");
         return OrderDetailReadTransfer.toDTO(order, mapper.registeredGuests(id));
     }

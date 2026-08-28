@@ -21,7 +21,7 @@ public class JobConfiguration {
             @Value("${hotel.xxl-job.log-path:./logs/xxl-job}") String logPath) {
         if (admins.isBlank() || token.isBlank())
             throw new IllegalArgumentException("XXL-JOB addresses and access token are required");
-        var executor = new XxlJobSpringExecutor();
+        XxlJobSpringExecutor executor = new XxlJobSpringExecutor();
         executor.setAdminAddresses(admins);
         executor.setAccessToken(token);
         executor.setAppname(name);

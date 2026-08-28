@@ -11,8 +11,10 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Component
 public class SessionEndAdapter implements SessionEndPort {
     public void endCurrentSession() {
-        var attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        ServletRequestAttributes attributes =
+                (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        org.springframework.security.core.Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
         new SecurityContextLogoutHandler()
                 .logout(attributes.getRequest(), attributes.getResponse(), authentication);
         new CookieClearingLogoutHandler("JSESSIONID")

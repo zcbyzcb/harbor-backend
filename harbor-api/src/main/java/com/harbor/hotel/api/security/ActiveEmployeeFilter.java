@@ -30,7 +30,7 @@ public class ActiveEmployeeFilter extends OncePerRequestFilter {
                 && authentication.getPrincipal() instanceof EmployeeSessionIdentity employee
                 && !employeeActivityPort.isActive(employee.employeeId())) {
             SecurityContextHolder.clearContext();
-            var session = request.getSession(false);
+            jakarta.servlet.http.HttpSession session = request.getSession(false);
             if (session != null) {
                 session.invalidate();
             }

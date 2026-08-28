@@ -37,7 +37,7 @@ public final class Reservation {
                 || input.bookerPhone() == null
                 || !input.bookerPhone().matches("[+0-9][0-9 -]{5,31}"))
             throw new DomainException("INVALID_ARGUMENT");
-        var period = new StayPeriod(input.checkinDate(), input.checkoutDate());
+        StayPeriod period = new StayPeriod(input.checkinDate(), input.checkoutDate());
         if (orderNo == null || !orderNo.matches("UO\\d{18}"))
             throw new DomainException("INVALID_ORDER_NO");
         byte[] hash =
@@ -50,13 +50,13 @@ public final class Reservation {
                         input.bookerPhone(),
                         input.confirmedPrice().setScale(2).toPlainString(),
                         input.remark());
-        var previous = bookings.findRequest(employeeId, key);
+        BookingRepository.Order previous = bookings.findRequest(employeeId, key);
         if (previous != null) {
             bookings.lockType(previous.roomTypeId());
             previous = bookings.lockOrder(previous.id());
             return replay(previous, hash);
         }
-        var type = bookings.lockType(input.roomTypeId());
+        BookingRepository.RoomType type = bookings.lockType(input.roomTypeId());
         if (type == null) throw new DomainException("ROOM_TYPE_NOT_FOUND");
         previous = bookings.findRequest(employeeId, key);
         if (previous != null) {
@@ -68,15 +68,16 @@ public final class Reservation {
             throw new DomainException("BOOKING_WINDOW_INVALID");
         if (type.price().compareTo(input.confirmedPrice()) != 0)
             throw new DomainException("PRICE_CHANGED");
-        var states = new ArrayList<InventoryState>();
+        ArrayList<InventoryState> states = new ArrayList<>();
         for (LocalDate date = input.checkinDate();
                 date.isBefore(input.checkoutDate());
                 date = date.plusDays(1)) {
-            var inventory = inventories.findByRoomTypeAndDate(type.id(), date);
+            InventoryRepository.InventorySnapshot inventory =
+                    inventories.findByRoomTypeAndDate(type.id(), date);
             if (inventory == null) throw new DomainException("INVENTORY_NOT_READY");
             if (!inventories.isConsistent(inventory.id()))
                 throw new DomainException("INVENTORY_DATA_INCONSISTENT");
-            var state =
+            InventoryState state =
                     new InventoryState(
                             inventory.id(),
                             type.id(),
@@ -88,7 +89,7 @@ public final class Reservation {
             states.add(state);
         }
         int nights = Math.toIntExact(period.nights());
-        var total =
+        java.math.BigDecimal total =
                 type.price()
                         .multiply(java.math.BigDecimal.valueOf((long) nights * input.roomCount()));
         if (total.precision() - total.scale() > 10) throw new DomainException("INVALID_AMOUNT");
@@ -110,7 +111,7 @@ public final class Reservation {
                                 type.price(),
                                 total,
                                 input.remark()));
-        for (var state : states) {
+        for (InventoryState state : states) {
             bookings.updateInventory(
                     state.id(),
                     state.bookedRooms(),
@@ -124,11 +125,12 @@ public final class Reservation {
 
     private Long replay(BookingRepository.Order previous, byte[] hash) {
         RequestFingerprint.same(previous.requestHash(), hash);
-        var ids = new java.util.HashSet<Long>();
+        java.util.HashSet<Long> ids = new java.util.HashSet<>();
         for (LocalDate date = previous.checkinTime().toLocalDate();
                 date.isBefore(previous.checkoutTime().toLocalDate());
                 date = date.plusDays(1)) {
-            var row = inventories.findByRoomTypeAndDate(previous.roomTypeId(), date);
+            InventoryRepository.InventorySnapshot row =
+                    inventories.findByRoomTypeAndDate(previous.roomTypeId(), date);
             if (row == null || !inventories.isConsistent(row.id()))
                 throw new DomainException("INVENTORY_DATA_INCONSISTENT");
             ids.add(row.id());
@@ -140,7 +142,7 @@ public final class Reservation {
                     case "CANCELLED" -> "cancel";
                     default -> "invalid";
                 };
-        var locks = bookings.lockReservations(previous.id());
+        java.util.List<BookingRepository.Lock> locks = bookings.lockReservations(previous.id());
         if (ids.size() != previous.nights()
                 || locks.size() != ids.size()
                 || locks.stream()

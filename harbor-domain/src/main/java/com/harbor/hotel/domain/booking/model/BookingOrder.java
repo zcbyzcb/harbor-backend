@@ -39,7 +39,8 @@ public final class BookingOrder {
         for (LocalDate date = order.checkinTime().toLocalDate();
                 date.isBefore(order.checkoutTime().toLocalDate());
                 date = date.plusDays(1)) {
-            var row = inventories.findByRoomTypeAndDate(order.roomTypeId(), date);
+            InventoryRepository.InventorySnapshot row =
+                    inventories.findByRoomTypeAndDate(order.roomTypeId(), date);
             if (row == null) throw new DomainException("INVENTORY_NOT_READY");
             if (!inventories.isConsistent(row.id()))
                 throw new DomainException("INVENTORY_DATA_INCONSISTENT");
@@ -75,7 +76,7 @@ public final class BookingOrder {
         String key = RequestFingerprint.key(requestKey);
         Order order = lock();
         if ("CHECKED_IN".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
-        var states = inventory(order);
+        List<InventoryState> states = inventory(order);
         if ("CANCELLED".equals(order.status())) {
             locks(order, states, "cancel");
             if (bookings.auditCount(id, "CANCEL") != 1)
@@ -83,8 +84,8 @@ public final class BookingOrder {
             return id;
         }
         if (!"PENDING".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
-        var locks = locks(order, states, "locked");
-        for (var state : states) {
+        List<Lock> locks = locks(order, states, "locked");
+        for (InventoryState state : states) {
             state.cancelReservation(order.roomCount());
             bookings.updateInventory(
                     state.id(),
@@ -92,7 +93,7 @@ public final class BookingOrder {
                     state.checkedInRooms(),
                     state.availableRooms());
         }
-        for (var record : locks) bookings.transitionReservation(record.id(), "cancel");
+        for (Lock record : locks) bookings.transitionReservation(record.id(), "cancel");
         bookings.markCancelled(id, employeeId, LocalDateTime.now(clock), reason);
         bookings.audit(id, "CANCEL", "PENDING", "CANCELLED", employeeId, key);
         return id;
@@ -105,13 +106,14 @@ public final class BookingOrder {
                 || allocations.stream()
                         .anyMatch(a -> a == null || a.roomId() == null || a.guests() == null))
             throw new DomainException("INVALID_ARGUMENT");
-        var sorted = allocations.stream().sorted(Comparator.comparing(Allocation::roomId)).toList();
+        List<Allocation> sorted =
+                allocations.stream().sorted(Comparator.comparing(Allocation::roomId)).toList();
         List<Object> fields = new ArrayList<>();
         fields.add(id);
-        for (var a : sorted) {
+        for (Allocation a : sorted) {
             fields.add(a.roomId());
             fields.add(a.guests().size());
-            for (var guest : a.guests()) {
+            for (Guest guest : a.guests()) {
                 fields.add(guest.name());
                 fields.add(guest.phone());
             }
@@ -119,18 +121,18 @@ public final class BookingOrder {
         byte[] hash = RequestFingerprint.hash(fields.toArray());
         Order order = lock();
         if ("CANCELLED".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
-        var states = inventory(order);
+        List<InventoryState> states = inventory(order);
         if ("CHECKED_IN".equals(order.status())) {
             locks(order, states, "release");
-            var records = bookings.checkins(id);
+            List<Checkin> records = bookings.checkins(id);
             if (records.size() != order.roomCount() || bookings.auditCount(id, "CHECK_IN") != 1)
                 throw new DomainException("INVENTORY_DATA_INCONSISTENT");
-            for (var record : records) {
+            for (Checkin record : records) {
                 if (!record.employeeId().equals(employeeId) || !record.requestId().equals(key))
                     throw new DomainException("ORDER_STATUS_CONFLICT");
                 RequestFingerprint.same(record.requestHash(), hash);
             }
-            var details =
+            List<Detail> details =
                     bookings.lockDetails(
                             states.stream().map(InventoryState::id).toList(),
                             records.stream().map(Checkin::roomId).sorted().toList());
@@ -156,12 +158,12 @@ public final class BookingOrder {
         LocalDateTime now = LocalDateTime.now(clock);
         if (now.isBefore(order.checkinTime()) || !now.isBefore(order.checkoutTime()))
             throw new DomainException("CHECKIN_TIME_INVALID");
-        var locks = locks(order, states, "locked");
+        List<Lock> locks = locks(order, states, "locked");
         if (sorted.size() != order.roomCount()
                 || sorted.stream().map(Allocation::roomId).distinct().count() != order.roomCount())
             throw new DomainException("ROOM_COUNT_MISMATCH");
         int maxGuests = bookings.lockType(order.roomTypeId()).maxGuests();
-        for (var allocation : sorted) {
+        for (Allocation allocation : sorted) {
             if (allocation.guests().isEmpty()
                     || allocation.guests().size() > maxGuests
                     || allocation.guests().stream()
@@ -179,7 +181,7 @@ public final class BookingOrder {
                                                                                 + " -]{5,31}"))))
                 throw new DomainException("INVALID_GUESTS");
         }
-        var rooms = bookings.lockRooms(sorted.stream().map(Allocation::roomId).toList());
+        List<Room> rooms = bookings.lockRooms(sorted.stream().map(Allocation::roomId).toList());
         if (rooms.size() != order.roomCount()
                 || rooms.stream()
                         .anyMatch(
@@ -187,7 +189,7 @@ public final class BookingOrder {
                                         !r.roomTypeId().equals(order.roomTypeId())
                                                 || !"READY".equals(r.physicalStatus())))
             throw new DomainException("ROOM_NOT_AVAILABLE");
-        var details =
+        List<Detail> details =
                 bookings.lockDetails(
                         states.stream().map(InventoryState::id).toList(),
                         sorted.stream().map(Allocation::roomId).toList());
@@ -200,7 +202,7 @@ public final class BookingOrder {
                                                 || d.occupied() != 0
                                                 || d.checkinId() != null))
             throw new DomainException("ROOM_NOT_AVAILABLE");
-        for (var state : states) {
+        for (InventoryState state : states) {
             state.convertToCheckin(order.roomCount());
             bookings.updateInventory(
                     state.id(),
@@ -208,9 +210,9 @@ public final class BookingOrder {
                     state.checkedInRooms(),
                     state.availableRooms());
         }
-        for (var record : locks) bookings.transitionReservation(record.id(), "release");
-        for (var allocation : sorted) {
-            var room =
+        for (Lock record : locks) bookings.transitionReservation(record.id(), "release");
+        for (Allocation allocation : sorted) {
+            Room room =
                     rooms.stream()
                             .filter(r -> r.id().equals(allocation.roomId()))
                             .findFirst()
@@ -228,7 +230,7 @@ public final class BookingOrder {
                                     hash));
             for (int index = 0; index < allocation.guests().size(); index++)
                 bookings.insertGuest(checkinId, index + 1, allocation.guests().get(index));
-            for (var detail : details)
+            for (Detail detail : details)
                 if (detail.roomId().equals(room.id()))
                     bookings.occupyDetail(detail.id(), checkinId);
             bookings.occupyRoom(room.id());
