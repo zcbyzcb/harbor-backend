@@ -1,5 +1,9 @@
 package com.harbor.hotel.domain.inventory.repository;
 
+import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
+import com.harbor.hotel.domain.inventory.model.RoomSeed;
+import com.harbor.hotel.domain.inventory.model.RoomTypeSeed;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,15 +24,4 @@ public interface InventoryRepository {
 
     void createDetails(Long inventoryId, Long roomTypeId, List<RoomSeed> rooms);
 
-    record RoomTypeSeed(Long id) {}
-
-    record RoomSeed(Long id, String roomNo, boolean active) {}
-
-    record InventorySnapshot(
-            Long id,
-            int totalRooms,
-            int bookedRooms,
-            int checkedInRooms,
-            int availableRooms,
-            int detailCount) {}
 }

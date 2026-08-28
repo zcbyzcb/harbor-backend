@@ -1,6 +1,9 @@
 package com.harbor.hotel.infrastructure.persistence.repository;
 
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
+import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
+import com.harbor.hotel.domain.inventory.model.RoomSeed;
+import com.harbor.hotel.domain.inventory.model.RoomTypeSeed;
 import com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper;
 
 import jakarta.annotation.Resource;

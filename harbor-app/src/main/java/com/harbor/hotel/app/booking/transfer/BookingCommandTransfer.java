@@ -1,8 +1,9 @@
 package com.harbor.hotel.app.booking.transfer;
 
 import com.harbor.hotel.app.booking.dto.*;
+import com.harbor.hotel.domain.booking.model.Allocation;
 import com.harbor.hotel.domain.booking.model.BookingInput;
-import com.harbor.hotel.domain.booking.repository.BookingRepository;
+import com.harbor.hotel.domain.booking.model.Guest;
 
 import java.util.List;
 
@@ -21,16 +22,16 @@ public final class BookingCommandTransfer {
                 clean(c.remark()));
     }
 
-    public static List<BookingRepository.Allocation> toDomain(CheckInCommandDTO c) {
+    public static List<Allocation> toDomain(CheckInCommandDTO c) {
         return c.rooms().stream()
                 .map(
                         a ->
-                                new BookingRepository.Allocation(
+                                new Allocation(
                                         a.roomId(),
                                         a.guests().stream()
                                                 .map(
                                                         g ->
-                                                                new BookingRepository.Guest(
+                                                                new Guest(
                                                                         clean(g.name()),
                                                                         clean(g.phone())))
                                                 .toList()))

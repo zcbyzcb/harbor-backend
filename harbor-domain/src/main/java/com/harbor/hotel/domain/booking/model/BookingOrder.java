@@ -1,8 +1,8 @@
 package com.harbor.hotel.domain.booking.model;
 
 import com.harbor.hotel.domain.booking.repository.BookingRepository;
-import com.harbor.hotel.domain.booking.repository.BookingRepository.*;
 import com.harbor.hotel.domain.inventory.model.InventoryState;
+import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 import com.harbor.hotel.domain.shared.DomainException;
 
@@ -39,7 +39,7 @@ public final class BookingOrder {
         for (LocalDate date = order.checkinTime().toLocalDate();
                 date.isBefore(order.checkoutTime().toLocalDate());
                 date = date.plusDays(1)) {
-            InventoryRepository.InventorySnapshot row =
+            InventorySnapshot row =
                     inventories.findByRoomTypeAndDate(order.roomTypeId(), date);
             if (row == null) throw new DomainException("INVENTORY_NOT_READY");
             if (!inventories.isConsistent(row.id()))

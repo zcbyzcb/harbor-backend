@@ -2,6 +2,7 @@ package com.harbor.hotel.domain.booking.model;
 
 import com.harbor.hotel.domain.booking.repository.BookingRepository;
 import com.harbor.hotel.domain.inventory.model.InventoryState;
+import com.harbor.hotel.domain.inventory.model.InventorySnapshot;
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 import com.harbor.hotel.domain.shared.DomainException;
 import com.harbor.hotel.domain.shared.StayPeriod;
@@ -50,13 +51,13 @@ public final class Reservation {
                         input.bookerPhone(),
                         input.confirmedPrice().setScale(2).toPlainString(),
                         input.remark());
-        BookingRepository.Order previous = bookings.findRequest(employeeId, key);
+        Order previous = bookings.findRequest(employeeId, key);
         if (previous != null) {
             bookings.lockType(previous.roomTypeId());
             previous = bookings.lockOrder(previous.id());
             return replay(previous, hash);
         }
-        BookingRepository.RoomType type = bookings.lockType(input.roomTypeId());
+        RoomType type = bookings.lockType(input.roomTypeId());
         if (type == null) throw new DomainException("ROOM_TYPE_NOT_FOUND");
         previous = bookings.findRequest(employeeId, key);
         if (previous != null) {
@@ -72,7 +73,7 @@ public final class Reservation {
         for (LocalDate date = input.checkinDate();
                 date.isBefore(input.checkoutDate());
                 date = date.plusDays(1)) {
-            InventoryRepository.InventorySnapshot inventory =
+            InventorySnapshot inventory =
                     inventories.findByRoomTypeAndDate(type.id(), date);
             if (inventory == null) throw new DomainException("INVENTORY_NOT_READY");
             if (!inventories.isConsistent(inventory.id()))
@@ -95,7 +96,7 @@ public final class Reservation {
         if (total.precision() - total.scale() > 10) throw new DomainException("INVALID_AMOUNT");
         Long id =
                 bookings.insertOrder(
-                        new BookingRepository.NewOrder(
+                        new NewOrder(
                                 orderNo,
                                 employeeId,
                                 key,
@@ -123,13 +124,13 @@ public final class Reservation {
         return id;
     }
 
-    private Long replay(BookingRepository.Order previous, byte[] hash) {
+    private Long replay(Order previous, byte[] hash) {
         RequestFingerprint.same(previous.requestHash(), hash);
         java.util.HashSet<Long> ids = new java.util.HashSet<>();
         for (LocalDate date = previous.checkinTime().toLocalDate();
                 date.isBefore(previous.checkoutTime().toLocalDate());
                 date = date.plusDays(1)) {
-            InventoryRepository.InventorySnapshot row =
+            InventorySnapshot row =
                     inventories.findByRoomTypeAndDate(previous.roomTypeId(), date);
             if (row == null || !inventories.isConsistent(row.id()))
                 throw new DomainException("INVENTORY_DATA_INCONSISTENT");
@@ -142,7 +143,7 @@ public final class Reservation {
                     case "CANCELLED" -> "cancel";
                     default -> "invalid";
                 };
-        java.util.List<BookingRepository.Lock> locks = bookings.lockReservations(previous.id());
+        java.util.List<Lock> locks = bookings.lockReservations(previous.id());
         if (ids.size() != previous.nights()
                 || locks.size() != ids.size()
                 || locks.stream()

@@ -1,22 +1,23 @@
 package com.harbor.hotel.infrastructure.persistence.transfer;
 
-import com.harbor.hotel.domain.booking.repository.BookingRepository;
+import com.harbor.hotel.domain.booking.model.*;
 import com.harbor.hotel.infrastructure.persistence.po.*;
 
 public final class BookingPersistenceTransfer {
     private BookingPersistenceTransfer() {}
 
-    public static RoomTypePO toPO(BookingRepository.RoomType v) {
+    public static RoomTypePO toPO(RoomType v) {
         return new RoomTypePO(v.id(), v.name(), v.price(), v.maxGuests());
     }
 
-    public static BookingRepository.RoomType toDomain(RoomTypePO v) {
+    public static RoomType toDomain(RoomTypePO v) {
         return v == null
                 ? null
-                : new BookingRepository.RoomType(v.id(), v.name(), v.price(), v.maxGuests());
+                : new RoomType(
+                        v.id(), v.name(), v.price(), v.maxGuests());
     }
 
-    public static OrderPO toPO(BookingRepository.Order v) {
+    public static OrderPO toPO(Order v) {
         return new OrderPO(
                 v.id(),
                 v.orderNo(),
@@ -31,10 +32,10 @@ public final class BookingPersistenceTransfer {
                 v.status());
     }
 
-    public static BookingRepository.Order toDomain(OrderPO v) {
+    public static Order toDomain(OrderPO v) {
         return v == null
                 ? null
-                : new BookingRepository.Order(
+                : new Order(
                         v.id(),
                         v.orderNo(),
                         v.employeeId(),
@@ -48,7 +49,7 @@ public final class BookingPersistenceTransfer {
                         v.status());
     }
 
-    public static NewOrderPO toPO(BookingRepository.NewOrder v) {
+    public static NewOrderPO toPO(NewOrder v) {
         return new NewOrderPO(
                 v.orderNo(),
                 v.employeeId(),
@@ -67,28 +68,29 @@ public final class BookingPersistenceTransfer {
                 v.remark());
     }
 
-    public static LockPO toPO(BookingRepository.Lock v) {
+    public static LockPO toPO(Lock v) {
         return new LockPO(v.id(), v.inventoryId(), v.roomCount(), v.status());
     }
 
-    public static BookingRepository.Lock toDomain(LockPO v) {
+    public static Lock toDomain(LockPO v) {
         return v == null
                 ? null
-                : new BookingRepository.Lock(v.id(), v.inventoryId(), v.roomCount(), v.status());
+                : new Lock(
+                        v.id(), v.inventoryId(), v.roomCount(), v.status());
     }
 
-    public static RoomPO toPO(BookingRepository.Room v) {
+    public static RoomPO toPO(Room v) {
         return new RoomPO(v.id(), v.roomTypeId(), v.roomNo(), v.physicalStatus());
     }
 
-    public static BookingRepository.Room toDomain(RoomPO v) {
+    public static Room toDomain(RoomPO v) {
         return v == null
                 ? null
-                : new BookingRepository.Room(
+                : new Room(
                         v.id(), v.roomTypeId(), v.roomNo(), v.physicalStatus());
     }
 
-    public static DetailPO toPO(BookingRepository.Detail v) {
+    public static DetailPO toPO(Detail v) {
         return new DetailPO(
                 v.id(),
                 v.inventoryId(),
@@ -99,10 +101,10 @@ public final class BookingPersistenceTransfer {
                 v.checkinId());
     }
 
-    public static BookingRepository.Detail toDomain(DetailPO v) {
+    public static Detail toDomain(DetailPO v) {
         return v == null
                 ? null
-                : new BookingRepository.Detail(
+                : new Detail(
                         v.id(),
                         v.inventoryId(),
                         v.roomTypeId(),
@@ -112,18 +114,18 @@ public final class BookingPersistenceTransfer {
                         v.checkinId());
     }
 
-    public static CheckinPO toPO(BookingRepository.Checkin v) {
+    public static CheckinPO toPO(Checkin v) {
         return new CheckinPO(v.id(), v.roomId(), v.employeeId(), v.requestId(), v.requestHash());
     }
 
-    public static BookingRepository.Checkin toDomain(CheckinPO v) {
+    public static Checkin toDomain(CheckinPO v) {
         return v == null
                 ? null
-                : new BookingRepository.Checkin(
+                : new Checkin(
                         v.id(), v.roomId(), v.employeeId(), v.requestId(), v.requestHash());
     }
 
-    public static NewCheckinPO toPO(BookingRepository.NewCheckin v) {
+    public static NewCheckinPO toPO(NewCheckin v) {
         return new NewCheckinPO(
                 v.orderId(),
                 v.roomTypeId(),

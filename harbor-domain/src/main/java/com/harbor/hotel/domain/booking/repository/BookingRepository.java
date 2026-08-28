@@ -1,6 +1,7 @@
 package com.harbor.hotel.domain.booking.repository;
 
-import java.math.BigDecimal;
+import com.harbor.hotel.domain.booking.model.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -51,64 +52,4 @@ public interface BookingRepository {
 
     int auditCount(Long orderId, String operation);
 
-    record RoomType(Long id, String name, BigDecimal price, int maxGuests) {}
-
-    record Order(
-            Long id,
-            String orderNo,
-            Long employeeId,
-            String requestId,
-            byte[] requestHash,
-            Long roomTypeId,
-            int roomCount,
-            LocalDateTime checkinTime,
-            LocalDateTime checkoutTime,
-            int nights,
-            String status) {}
-
-    record NewOrder(
-            String orderNo,
-            Long employeeId,
-            String requestId,
-            byte[] requestHash,
-            Long roomTypeId,
-            String roomTypeName,
-            int roomCount,
-            String bookerName,
-            String bookerPhone,
-            LocalDateTime checkinTime,
-            LocalDateTime checkoutTime,
-            int nights,
-            BigDecimal nightlyPrice,
-            BigDecimal totalAmount,
-            String remark) {}
-
-    record Lock(Long id, Long inventoryId, int roomCount, String status) {}
-
-    record Room(Long id, Long roomTypeId, String roomNo, String physicalStatus) {}
-
-    record Detail(
-            Long id,
-            Long inventoryId,
-            Long roomTypeId,
-            Long roomId,
-            String status,
-            int occupied,
-            Long checkinId) {}
-
-    record Checkin(Long id, Long roomId, Long employeeId, String requestId, byte[] requestHash) {}
-
-    record NewCheckin(
-            Long orderId,
-            Long roomTypeId,
-            Long roomId,
-            String roomNo,
-            LocalDateTime now,
-            Long employeeId,
-            String requestId,
-            byte[] requestHash) {}
-
-    record Guest(String name, String phone) {}
-
-    record Allocation(Long roomId, List<Guest> guests) {}
 }

@@ -1,6 +1,7 @@
 package com.harbor.hotel.infrastructure.persistence.repository;
 
 import com.harbor.hotel.domain.booking.repository.BookingRepository;
+import com.harbor.hotel.domain.booking.model.*;
 import com.harbor.hotel.domain.shared.DomainException;
 import com.harbor.hotel.infrastructure.persistence.mapper.BookingMapper;
 import com.harbor.hotel.infrastructure.persistence.transfer.BookingPersistenceTransfer;
