@@ -1,4 +1,4 @@
-package com.harbor.hotel.app.booking;
+package com.harbor.hotel.app.booking.generator;
 
 import com.harbor.hotel.domain.shared.DomainException;
 

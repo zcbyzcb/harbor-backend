@@ -1,4 +1,4 @@
-package com.harbor.hotel.app.auth;
+package com.harbor.hotel.app.auth.processor;
 
 import com.harbor.hotel.domain.auth.SessionEndPort;
 

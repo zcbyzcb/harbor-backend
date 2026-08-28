@@ -16,7 +16,7 @@ public final class Reservation {
     private final Clock clock;
     private final int window;
 
-    Reservation(BookingRepository b, InventoryRepository i, Clock c, int w) {
+    public Reservation(BookingRepository b, InventoryRepository i, Clock c, int w) {
         bookings = b;
         inventories = i;
         clock = c;

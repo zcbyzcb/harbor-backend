@@ -1,4 +1,4 @@
-package com.harbor.hotel.api.web.booking;
+package com.harbor.hotel.api.web.booking.request;
 
 import jakarta.validation.constraints.*;
 

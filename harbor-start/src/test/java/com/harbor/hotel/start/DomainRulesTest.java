@@ -2,7 +2,7 @@ package com.harbor.hotel.start;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.harbor.hotel.app.booking.OrderNoGenerator;
+import com.harbor.hotel.app.booking.generator.OrderNoGenerator;
 import com.harbor.hotel.domain.inventory.model.InventoryState;
 import com.harbor.hotel.domain.shared.*;
 

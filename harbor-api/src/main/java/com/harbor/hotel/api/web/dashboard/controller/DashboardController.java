@@ -1,4 +1,4 @@
-package com.harbor.hotel.api.web.dashboard;
+package com.harbor.hotel.api.web.dashboard.controller;
 
 import com.harbor.hotel.api.web.ApiResponse;
 import com.harbor.hotel.api.web.dashboard.transfer.DashboardTransfer;

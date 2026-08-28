@@ -1,4 +1,4 @@
-package com.harbor.hotel.app.inventory;
+package com.harbor.hotel.app.inventory.dto;
 
 import java.time.LocalDate;
 

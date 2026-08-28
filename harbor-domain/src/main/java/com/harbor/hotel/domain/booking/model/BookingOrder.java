@@ -18,7 +18,7 @@ public final class BookingOrder {
     private final Clock clock;
     private final Long id;
 
-    BookingOrder(BookingRepository b, InventoryRepository i, Clock c, Long id) {
+    public BookingOrder(BookingRepository b, InventoryRepository i, Clock c, Long id) {
         this.bookings = b;
         this.inventories = i;
         this.clock = c;

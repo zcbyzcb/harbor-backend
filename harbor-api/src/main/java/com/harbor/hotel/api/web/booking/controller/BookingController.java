@@ -1,7 +1,11 @@
-package com.harbor.hotel.api.web.booking;
+package com.harbor.hotel.api.web.booking.controller;
 
 import com.harbor.hotel.api.web.ApiResponse;
+import com.harbor.hotel.api.web.booking.request.BookingRequest;
+import com.harbor.hotel.api.web.booking.request.CancelRequest;
+import com.harbor.hotel.api.web.booking.request.CheckInRequest;
 import com.harbor.hotel.api.web.booking.transfer.BookingTransfer;
+import com.harbor.hotel.api.web.booking.vo.MutationVO;
 import com.harbor.hotel.app.booking.processor.*;
 import com.harbor.hotel.domain.auth.EmployeeSessionIdentity;
 

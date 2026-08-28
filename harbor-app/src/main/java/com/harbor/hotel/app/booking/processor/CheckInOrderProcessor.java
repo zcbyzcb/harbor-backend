@@ -2,7 +2,7 @@ package com.harbor.hotel.app.booking.processor;
 
 import com.harbor.hotel.app.booking.dto.CheckInCommandDTO;
 import com.harbor.hotel.app.booking.transfer.BookingCommandTransfer;
-import com.harbor.hotel.domain.booking.model.BookingFactory;
+import com.harbor.hotel.domain.booking.factory.BookingFactory;
 
 import jakarta.annotation.Resource;
 

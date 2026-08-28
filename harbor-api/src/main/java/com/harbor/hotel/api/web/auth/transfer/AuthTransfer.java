@@ -1,7 +1,7 @@
 package com.harbor.hotel.api.web.auth.transfer;
 
-import com.harbor.hotel.api.web.auth.EmployeeVO;
-import com.harbor.hotel.app.auth.EmployeeDTO;
+import com.harbor.hotel.api.web.auth.vo.EmployeeVO;
+import com.harbor.hotel.app.auth.dto.EmployeeDTO;
 import com.harbor.hotel.domain.auth.EmployeeSessionIdentity;
 
 public final class AuthTransfer {

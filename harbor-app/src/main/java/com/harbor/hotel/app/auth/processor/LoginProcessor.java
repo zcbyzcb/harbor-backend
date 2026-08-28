@@ -1,5 +1,8 @@
-package com.harbor.hotel.app.auth;
+package com.harbor.hotel.app.auth.processor;
 
+import com.harbor.hotel.app.auth.dto.EmployeeDTO;
+import com.harbor.hotel.app.auth.dto.LoginDTO;
+import com.harbor.hotel.app.auth.transfer.EmployeeTransfer;
 import com.harbor.hotel.domain.auth.*;
 import com.harbor.hotel.domain.shared.DomainException;
 
@@ -20,7 +23,7 @@ public class LoginProcessor {
                         > 72) {
             throw new DomainException("LOGIN_FAILED");
         }
-        return com.harbor.hotel.app.auth.transfer.EmployeeTransfer.toDTO(
+        return EmployeeTransfer.toDTO(
                 authenticationPort.authenticate(
                         command.username(), command.password(), command.source()));
     }

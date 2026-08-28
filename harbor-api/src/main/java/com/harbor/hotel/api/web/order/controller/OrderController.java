@@ -1,4 +1,4 @@
-package com.harbor.hotel.api.web.order;
+package com.harbor.hotel.api.web.order.controller;
 
 import com.harbor.hotel.api.web.ApiResponse;
 import com.harbor.hotel.api.web.order.transfer.OrderTransfer;

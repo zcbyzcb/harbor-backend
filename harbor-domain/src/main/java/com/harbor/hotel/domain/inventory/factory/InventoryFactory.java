@@ -1,5 +1,6 @@
-package com.harbor.hotel.domain.inventory.model;
+package com.harbor.hotel.domain.inventory.factory;
 
+import com.harbor.hotel.domain.inventory.model.DailyInventory;
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 
 import java.time.LocalDate;

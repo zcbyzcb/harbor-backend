@@ -1,5 +1,7 @@
-package com.harbor.hotel.domain.booking.model;
+package com.harbor.hotel.domain.booking.factory;
 
+import com.harbor.hotel.domain.booking.model.BookingOrder;
+import com.harbor.hotel.domain.booking.model.Reservation;
 import com.harbor.hotel.domain.booking.repository.BookingRepository;
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 

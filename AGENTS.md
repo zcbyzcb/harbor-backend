@@ -202,15 +202,19 @@ harbor-start/
   src/main/resources/                         # application*.yml、logback、mapper XML 等全部资源
 harbor-api/
   src/main/java/com/harbor/hotel/api/
-    auth/                                     # 登录、退出、当前员工接口
-    booking/ checkin/ inventory/ dashboard/
-    common/{request,response,assembler,exception}
+    auth/{controller,request,vo,transfer}     # 登录、退出、当前员工接口
+    booking/{controller,request,vo,transfer}
+    inventory/{controller,vo,transfer}
+    dashboard/{controller,vo,transfer}
+    order/{controller,vo,transfer}
+    common/{filter,response,exception}
 harbor-app/
   src/main/java/com/harbor/hotel/app/
-    booking/{processor,qurier,command,query,dto}
-    inventory/{processor,qurier,command,query,dto,job}
-    checkin/{processor,command,dto}
-    auth/{processor,qurier,command,dto}
+    booking/{processor,qurier,command,query,dto,transfer,generator}
+    inventory/{processor,qurier,command,query,dto,transfer,job}
+    order/{qurier,dto,transfer}
+    dashboard/{qurier,dto,transfer}
+    auth/{processor,qurier,dto,transfer}
 harbor-domain/
   src/main/java/com/harbor/hotel/domain/
     booking/{model,factory,repository,service}

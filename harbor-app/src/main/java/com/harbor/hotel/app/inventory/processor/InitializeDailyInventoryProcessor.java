@@ -1,6 +1,7 @@
-package com.harbor.hotel.app.inventory;
+package com.harbor.hotel.app.inventory.processor;
 
-import com.harbor.hotel.domain.inventory.model.InventoryFactory;
+import com.harbor.hotel.app.inventory.dto.InitializeDailyInventoryDTO;
+import com.harbor.hotel.domain.inventory.factory.InventoryFactory;
 
 import jakarta.annotation.Resource;
 

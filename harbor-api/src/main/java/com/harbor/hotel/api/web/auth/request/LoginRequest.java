@@ -1,4 +1,4 @@
-package com.harbor.hotel.api.web.auth;
+package com.harbor.hotel.api.web.auth.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

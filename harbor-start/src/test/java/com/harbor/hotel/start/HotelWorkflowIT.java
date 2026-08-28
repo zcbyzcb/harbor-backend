@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.*;
 import com.harbor.hotel.app.inventory.job.InventoryWindowJob;
 import com.harbor.hotel.app.booking.dto.*;
 import com.harbor.hotel.app.booking.processor.*;
-import com.harbor.hotel.app.inventory.*;
+import com.harbor.hotel.app.inventory.dto.InitializeDailyInventoryDTO;
+import com.harbor.hotel.app.inventory.processor.InitializeDailyInventoryProcessor;
 import com.harbor.hotel.domain.shared.DomainException;
 import com.harbor.hotel.infrastructure.persistence.mapper.InventoryMapper;
 

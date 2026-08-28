@@ -10,7 +10,7 @@ public final class DailyInventory {
     private final Long roomTypeId;
     private final LocalDate stayDate;
 
-    DailyInventory(InventoryRepository inventoryRepository, Long roomTypeId, LocalDate stayDate) {
+    public DailyInventory(InventoryRepository inventoryRepository, Long roomTypeId, LocalDate stayDate) {
         if (roomTypeId == null || stayDate == null) {
             throw new DomainException("INVALID_ARGUMENT");
         }

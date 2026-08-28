@@ -1,11 +1,15 @@
-package com.harbor.hotel.api.web.auth;
+package com.harbor.hotel.api.web.auth.controller;
 
 import com.harbor.hotel.api.web.ApiResponse;
+import com.harbor.hotel.api.web.auth.request.LoginRequest;
 import com.harbor.hotel.api.web.auth.transfer.AuthTransfer;
-import com.harbor.hotel.app.auth.EmployeeDTO;
-import com.harbor.hotel.app.auth.GetCurrentEmployeeQurier;
-import com.harbor.hotel.app.auth.LoginDTO;
-import com.harbor.hotel.app.auth.LoginProcessor;
+import com.harbor.hotel.api.web.auth.vo.CsrfVO;
+import com.harbor.hotel.api.web.auth.vo.EmployeeVO;
+import com.harbor.hotel.app.auth.dto.EmployeeDTO;
+import com.harbor.hotel.app.auth.dto.LoginDTO;
+import com.harbor.hotel.app.auth.processor.LoginProcessor;
+import com.harbor.hotel.app.auth.processor.LogoutProcessor;
+import com.harbor.hotel.app.auth.qurier.GetCurrentEmployeeQurier;
 import com.harbor.hotel.domain.auth.EmployeeSessionIdentity;
 
 import jakarta.annotation.Resource;
@@ -32,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Resource private com.harbor.hotel.app.auth.LogoutProcessor logoutProcessor;
+    @Resource private LogoutProcessor logoutProcessor;
     @Resource private LoginProcessor loginProcessor;
     @Resource private GetCurrentEmployeeQurier currentEmployeeQurier;
     @Resource private SecurityContextRepository securityContextRepository;

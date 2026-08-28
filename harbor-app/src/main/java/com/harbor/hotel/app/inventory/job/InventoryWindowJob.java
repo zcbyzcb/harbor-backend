@@ -1,7 +1,7 @@
 package com.harbor.hotel.app.inventory.job;
 
-import com.harbor.hotel.app.inventory.InitializeDailyInventoryDTO;
-import com.harbor.hotel.app.inventory.InitializeDailyInventoryProcessor;
+import com.harbor.hotel.app.inventory.dto.InitializeDailyInventoryDTO;
+import com.harbor.hotel.app.inventory.processor.InitializeDailyInventoryProcessor;
 import com.harbor.hotel.app.inventory.qurier.ListRoomTypeIdsQurier;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;

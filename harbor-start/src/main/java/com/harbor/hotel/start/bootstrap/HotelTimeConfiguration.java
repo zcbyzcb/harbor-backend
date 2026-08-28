@@ -1,6 +1,7 @@
 package com.harbor.hotel.start.bootstrap;
 
-import com.harbor.hotel.domain.inventory.model.InventoryFactory;
+import com.harbor.hotel.domain.booking.factory.BookingFactory;
+import com.harbor.hotel.domain.inventory.factory.InventoryFactory;
 import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
 
 import jakarta.annotation.Resource;
@@ -22,11 +23,11 @@ public class HotelTimeConfiguration {
     }
 
     @Bean
-    com.harbor.hotel.domain.booking.model.BookingFactory bookingFactory(
+    BookingFactory bookingFactory(
             com.harbor.hotel.domain.booking.repository.BookingRepository bookings,
             Clock hotelClock,
             @Value("${hotel.inventory-window-days:7}") int days) {
-        return new com.harbor.hotel.domain.booking.model.BookingFactory(
+        return new BookingFactory(
                 bookings, inventoryRepository, hotelClock, days);
     }
 

@@ -1,6 +1,7 @@
 package com.harbor.hotel.api.web.booking.transfer;
 
-import com.harbor.hotel.api.web.booking.*;
+import com.harbor.hotel.api.web.booking.request.*;
+import com.harbor.hotel.api.web.booking.vo.MutationVO;
 import com.harbor.hotel.app.booking.dto.*;
 
 public final class BookingTransfer {

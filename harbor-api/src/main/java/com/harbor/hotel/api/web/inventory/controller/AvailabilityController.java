@@ -1,4 +1,4 @@
-package com.harbor.hotel.api.web.inventory;
+package com.harbor.hotel.api.web.inventory.controller;
 
 import com.harbor.hotel.api.web.ApiResponse;
 import com.harbor.hotel.api.web.inventory.transfer.AvailabilityTransfer;
