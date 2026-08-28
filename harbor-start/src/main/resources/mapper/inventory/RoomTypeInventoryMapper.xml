@@ -7,8 +7,23 @@
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO room_type_inventory(room_type_id,stay_date,total_rooms,booked_rooms,checked_in_rooms,available_rooms) VALUES(#{roomTypeId},#{stayDate},#{totalRooms},0,0,#{availableRooms})
   </insert>
-  <update id="updateCounts">
-    UPDATE room_type_inventory SET booked_rooms = #{booked}, checked_in_rooms = #{checkedIn}, available_rooms = #{available} WHERE id = #{id} AND is_deleted = 0 AND booked_rooms = #{expectedBooked} AND checked_in_rooms = #{expectedCheckedIn} AND available_rooms = #{expectedAvailable}
+  <update id="reserve">
+    UPDATE room_type_inventory
+    SET booked_rooms = booked_rooms + #{roomCount},
+        available_rooms = available_rooms - #{roomCount}
+    WHERE id = #{id} AND is_deleted = 0 AND available_rooms &gt;= #{roomCount}
+  </update>
+  <update id="cancelReservation">
+    UPDATE room_type_inventory
+    SET booked_rooms = booked_rooms - #{roomCount},
+        available_rooms = available_rooms + #{roomCount}
+    WHERE id = #{id} AND is_deleted = 0 AND booked_rooms &gt;= #{roomCount}
+  </update>
+  <update id="checkIn">
+    UPDATE room_type_inventory
+    SET booked_rooms = booked_rooms - #{roomCount},
+        checked_in_rooms = checked_in_rooms + #{roomCount}
+    WHERE id = #{id} AND is_deleted = 0 AND booked_rooms &gt;= #{roomCount}
   </update>
   <select id="isConsistent" resultType="boolean">
     SELECT i.is_deleted = 0

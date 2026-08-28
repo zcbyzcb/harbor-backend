@@ -69,10 +69,16 @@ public class MybatisBookingRepository implements BookingRepository {
         one(inventoryLockMapper.insert(orderId, inventoryId, count));
     }
 
-    public void updateInventory(Long id, int booked, int checkedIn, int available,
-            int expectedBooked, int expectedCheckedIn, int expectedAvailable) {
-        one(roomTypeInventoryMapper.updateCounts(id, booked, checkedIn, available,
-                expectedBooked, expectedCheckedIn, expectedAvailable));
+    public void reserveInventory(Long id, int roomCount) {
+        one(roomTypeInventoryMapper.reserve(id, roomCount));
+    }
+
+    public void cancelReservation(Long id, int roomCount) {
+        one(roomTypeInventoryMapper.cancelReservation(id, roomCount));
+    }
+
+    public void convertReservationToCheckin(Long id, int roomCount) {
+        one(roomTypeInventoryMapper.checkIn(id, roomCount));
     }
 
     public void transitionReservation(Long id, String status) {

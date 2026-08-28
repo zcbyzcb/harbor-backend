@@ -88,14 +88,7 @@ public final class BookingOrder {
         List<Lock> locks = locks(order, states, "locked");
         for (InventoryState state : states) {
             state.cancelReservation(order.roomCount());
-            bookings.updateInventory(
-                    state.id(),
-                    state.bookedRooms(),
-                    state.checkedInRooms(),
-                    state.availableRooms(),
-                    state.bookedRooms() + order.roomCount(),
-                    state.checkedInRooms(),
-                    state.availableRooms() - order.roomCount());
+            bookings.cancelReservation(state.id(), order.roomCount());
         }
         for (Lock record : locks) bookings.transitionReservation(record.id(), "cancel");
         bookings.markCancelled(id, employeeId, LocalDateTime.now(clock), reason);
@@ -184,14 +177,7 @@ public final class BookingOrder {
             throw new DomainException("ROOM_NOT_AVAILABLE");
         for (InventoryState state : states) {
             state.convertToCheckin(order.roomCount());
-            bookings.updateInventory(
-                    state.id(),
-                    state.bookedRooms(),
-                    state.checkedInRooms(),
-                    state.availableRooms(),
-                    state.bookedRooms() + order.roomCount(),
-                    state.checkedInRooms() - order.roomCount(),
-                    state.availableRooms());
+            bookings.convertReservationToCheckin(state.id(), order.roomCount());
         }
         for (Lock record : locks) bookings.transitionReservation(record.id(), "release");
         for (Allocation allocation : sorted) {

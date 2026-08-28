@@ -8,9 +8,10 @@ import java.time.LocalDate;
 public interface RoomTypeInventoryMapper {
     InventoryPO findByRoomTypeAndStayDate(@Param("roomTypeId") Long roomTypeId, @Param("stayDate") LocalDate stayDate);
     int insert(NewInventoryPO row);
-    int updateCounts(@Param("id") Long id, @Param("booked") int booked,
-            @Param("checkedIn") int checkedIn, @Param("available") int available,
-            @Param("expectedBooked") int expectedBooked, @Param("expectedCheckedIn") int expectedCheckedIn,
-            @Param("expectedAvailable") int expectedAvailable);
+    int reserve(@Param("id") Long id, @Param("roomCount") int roomCount);
+
+    int cancelReservation(@Param("id") Long id, @Param("roomCount") int roomCount);
+
+    int checkIn(@Param("id") Long id, @Param("roomCount") int roomCount);
     boolean isConsistent(@Param("inventoryId") Long inventoryId);
 }

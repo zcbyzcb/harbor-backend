@@ -101,14 +101,7 @@ public final class Reservation {
                                 total,
                                 input.remark()));
         for (InventoryState state : states) {
-            bookings.updateInventory(
-                    state.id(),
-                    state.bookedRooms(),
-                    state.checkedInRooms(),
-                    state.availableRooms(),
-                    state.bookedRooms() - input.roomCount(),
-                    state.checkedInRooms(),
-                    state.availableRooms() + input.roomCount());
+            bookings.reserveInventory(state.id(), input.roomCount());
             bookings.insertReservation(id, state.id(), input.roomCount());
         }
         bookings.audit(id, "CREATE", null, "PENDING", employeeId, key);
