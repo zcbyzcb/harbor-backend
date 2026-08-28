@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.AvailabilityReadMapper">
+    <select id="list" resultType="com.harbor.hotel.infrastructure.persistence.po.AvailableRoomTypePO">
+        SELECT CAST(rt.id AS CHAR) AS roomTypeId, rt.type_code AS typeCode, rt.type_name AS typeName,
+               rt.bed_type AS bedType, rt.max_guests AS maxGuests, rt.base_price AS nightlyPrice,
+               COALESCE(MIN(i.available_rooms), 0) AS availableRooms,
+               CASE WHEN COUNT(i.id) = #{expectedDays} THEN TRUE ELSE FALSE END AS inventoryReady
+        FROM room_type rt
+        LEFT JOIN room_type_inventory i
+          ON i.room_type_id = rt.id AND i.is_deleted = 0
+          AND i.stay_date IN
+          <foreach collection="stayDates" item="stayDate" open="(" separator="," close=")">
+              #{stayDate}
+          </foreach>
+        WHERE rt.is_deleted = 0
+        GROUP BY rt.id, rt.type_code, rt.type_name, rt.bed_type, rt.max_guests, rt.base_price
+        ORDER BY rt.id
+    </select>
+</mapper>
+

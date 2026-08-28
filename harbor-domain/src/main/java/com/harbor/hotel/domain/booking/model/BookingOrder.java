@@ -1,0 +1,240 @@
+package com.harbor.hotel.domain.booking.model;
+
+import com.harbor.hotel.domain.booking.repository.BookingRepository;
+import com.harbor.hotel.domain.booking.repository.BookingRepository.*;
+import com.harbor.hotel.domain.inventory.model.InventoryState;
+import com.harbor.hotel.domain.inventory.repository.InventoryRepository;
+import com.harbor.hotel.domain.shared.DomainException;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+
+/** Whole-order transitions; all persistence participates in the Processor's transaction. */
+public final class BookingOrder {
+    private final BookingRepository bookings;
+    private final InventoryRepository inventories;
+    private final Clock clock;
+    private final Long id;
+
+    BookingOrder(BookingRepository b, InventoryRepository i, Clock c, Long id) {
+        this.bookings = b;
+        this.inventories = i;
+        this.clock = c;
+        this.id = id;
+    }
+
+    private Order lock() {
+        Long typeId = bookings.orderType(id);
+        if (typeId == null) throw new DomainException("ORDER_NOT_FOUND");
+        if (bookings.lockType(typeId) == null) throw new DomainException("ROOM_TYPE_NOT_FOUND");
+        Order order = bookings.lockOrder(id);
+        if (order == null) throw new DomainException("ORDER_NOT_FOUND");
+        return order;
+    }
+
+    private List<InventoryState> inventory(Order order) {
+        List<InventoryState> result = new ArrayList<>();
+        for (LocalDate date = order.checkinTime().toLocalDate();
+                date.isBefore(order.checkoutTime().toLocalDate());
+                date = date.plusDays(1)) {
+            var row = inventories.findByRoomTypeAndDate(order.roomTypeId(), date);
+            if (row == null) throw new DomainException("INVENTORY_NOT_READY");
+            if (!inventories.isConsistent(row.id()))
+                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+            result.add(
+                    new InventoryState(
+                            row.id(),
+                            order.roomTypeId(),
+                            row.totalRooms(),
+                            row.bookedRooms(),
+                            row.checkedInRooms(),
+                            row.availableRooms()));
+        }
+        if (result.size() != order.nights())
+            throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+        return result;
+    }
+
+    private List<Lock> locks(Order order, List<InventoryState> states, String expected) {
+        List<Lock> locks = bookings.lockReservations(id);
+        Set<Long> ids = new HashSet<>(states.stream().map(InventoryState::id).toList());
+        if (locks.size() != states.size()
+                || locks.stream()
+                        .anyMatch(
+                                l ->
+                                        !ids.remove(l.inventoryId())
+                                                || l.roomCount() != order.roomCount()
+                                                || !expected.equals(l.status()))
+                || !ids.isEmpty()) throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+        return locks;
+    }
+
+    public Long cancel(Long employeeId, String requestKey, String reason) {
+        String key = RequestFingerprint.key(requestKey);
+        Order order = lock();
+        if ("CHECKED_IN".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
+        var states = inventory(order);
+        if ("CANCELLED".equals(order.status())) {
+            locks(order, states, "cancel");
+            if (bookings.auditCount(id, "CANCEL") != 1)
+                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+            return id;
+        }
+        if (!"PENDING".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
+        var locks = locks(order, states, "locked");
+        for (var state : states) {
+            state.cancelReservation(order.roomCount());
+            bookings.updateInventory(
+                    state.id(),
+                    state.bookedRooms(),
+                    state.checkedInRooms(),
+                    state.availableRooms());
+        }
+        for (var record : locks) bookings.transitionReservation(record.id(), "cancel");
+        bookings.markCancelled(id, employeeId, LocalDateTime.now(clock), reason);
+        bookings.audit(id, "CANCEL", "PENDING", "CANCELLED", employeeId, key);
+        return id;
+    }
+
+    public Long checkIn(Long employeeId, String requestKey, List<Allocation> allocations) {
+        String key = RequestFingerprint.key(requestKey);
+        if (allocations == null
+                || allocations.isEmpty()
+                || allocations.stream()
+                        .anyMatch(a -> a == null || a.roomId() == null || a.guests() == null))
+            throw new DomainException("INVALID_ARGUMENT");
+        var sorted = allocations.stream().sorted(Comparator.comparing(Allocation::roomId)).toList();
+        List<Object> fields = new ArrayList<>();
+        fields.add(id);
+        for (var a : sorted) {
+            fields.add(a.roomId());
+            fields.add(a.guests().size());
+            for (var guest : a.guests()) {
+                fields.add(guest.name());
+                fields.add(guest.phone());
+            }
+        }
+        byte[] hash = RequestFingerprint.hash(fields.toArray());
+        Order order = lock();
+        if ("CANCELLED".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
+        var states = inventory(order);
+        if ("CHECKED_IN".equals(order.status())) {
+            locks(order, states, "release");
+            var records = bookings.checkins(id);
+            if (records.size() != order.roomCount() || bookings.auditCount(id, "CHECK_IN") != 1)
+                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+            for (var record : records) {
+                if (!record.employeeId().equals(employeeId) || !record.requestId().equals(key))
+                    throw new DomainException("ORDER_STATUS_CONFLICT");
+                RequestFingerprint.same(record.requestHash(), hash);
+            }
+            var details =
+                    bookings.lockDetails(
+                            states.stream().map(InventoryState::id).toList(),
+                            records.stream().map(Checkin::roomId).sorted().toList());
+            if (details.size() != order.roomCount() * order.nights()
+                    || details.stream()
+                            .anyMatch(
+                                    d ->
+                                            d.occupied() != 1
+                                                    || records.stream()
+                                                            .noneMatch(
+                                                                    r ->
+                                                                            r.id().equals(
+                                                                                                    d
+                                                                                                            .checkinId())
+                                                                                    && r.roomId()
+                                                                                            .equals(
+                                                                                                    d
+                                                                                                            .roomId()))))
+                throw new DomainException("INVENTORY_DATA_INCONSISTENT");
+            return id;
+        }
+        if (!"PENDING".equals(order.status())) throw new DomainException("ORDER_STATUS_CONFLICT");
+        LocalDateTime now = LocalDateTime.now(clock);
+        if (now.isBefore(order.checkinTime()) || !now.isBefore(order.checkoutTime()))
+            throw new DomainException("CHECKIN_TIME_INVALID");
+        var locks = locks(order, states, "locked");
+        if (sorted.size() != order.roomCount()
+                || sorted.stream().map(Allocation::roomId).distinct().count() != order.roomCount())
+            throw new DomainException("ROOM_COUNT_MISMATCH");
+        int maxGuests = bookings.lockType(order.roomTypeId()).maxGuests();
+        for (var allocation : sorted) {
+            if (allocation.guests().isEmpty()
+                    || allocation.guests().size() > maxGuests
+                    || allocation.guests().stream()
+                            .anyMatch(
+                                    g ->
+                                            g == null
+                                                    || g.name() == null
+                                                    || g.name().isBlank()
+                                                    || g.name().length() > 64
+                                                    || (g.phone() != null
+                                                            && !g.phone().isEmpty()
+                                                            && !g.phone()
+                                                                    .matches(
+                                                                            "[+0-9][0-9"
+                                                                                + " -]{5,31}"))))
+                throw new DomainException("INVALID_GUESTS");
+        }
+        var rooms = bookings.lockRooms(sorted.stream().map(Allocation::roomId).toList());
+        if (rooms.size() != order.roomCount()
+                || rooms.stream()
+                        .anyMatch(
+                                r ->
+                                        !r.roomTypeId().equals(order.roomTypeId())
+                                                || !"READY".equals(r.physicalStatus())))
+            throw new DomainException("ROOM_NOT_AVAILABLE");
+        var details =
+                bookings.lockDetails(
+                        states.stream().map(InventoryState::id).toList(),
+                        sorted.stream().map(Allocation::roomId).toList());
+        if (details.size() != order.roomCount() * order.nights()
+                || details.stream()
+                        .anyMatch(
+                                d ->
+                                        !d.roomTypeId().equals(order.roomTypeId())
+                                                || !"ACTIVE".equals(d.status())
+                                                || d.occupied() != 0
+                                                || d.checkinId() != null))
+            throw new DomainException("ROOM_NOT_AVAILABLE");
+        for (var state : states) {
+            state.convertToCheckin(order.roomCount());
+            bookings.updateInventory(
+                    state.id(),
+                    state.bookedRooms(),
+                    state.checkedInRooms(),
+                    state.availableRooms());
+        }
+        for (var record : locks) bookings.transitionReservation(record.id(), "release");
+        for (var allocation : sorted) {
+            var room =
+                    rooms.stream()
+                            .filter(r -> r.id().equals(allocation.roomId()))
+                            .findFirst()
+                            .orElseThrow();
+            Long checkinId =
+                    bookings.insertCheckin(
+                            new NewCheckin(
+                                    id,
+                                    order.roomTypeId(),
+                                    room.id(),
+                                    room.roomNo(),
+                                    now,
+                                    employeeId,
+                                    key,
+                                    hash));
+            for (int index = 0; index < allocation.guests().size(); index++)
+                bookings.insertGuest(checkinId, index + 1, allocation.guests().get(index));
+            for (var detail : details)
+                if (detail.roomId().equals(room.id()))
+                    bookings.occupyDetail(detail.id(), checkinId);
+            bookings.occupyRoom(room.id());
+        }
+        bookings.markCheckedIn(id);
+        bookings.audit(id, "CHECK_IN", "PENDING", "CHECKED_IN", employeeId, key);
+        return id;
+    }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.DashboardReadMapper">
+    <select id="countCheckedInRooms" resultType="int">SELECT COUNT(*) FROM checkin_record WHERE is_deleted = 0 AND DATE(checkin_time) = #{today}</select>
+    <select id="countPendingCheckInRooms" resultType="int">SELECT COALESCE(SUM(room_count), 0) FROM booking_order WHERE is_deleted = 0 AND status = 'PENDING' AND DATE(planned_checkin_time) = #{today}</select>
+    <select id="countAvailableRooms" resultType="int">SELECT COALESCE(SUM(available_rooms), 0) FROM room_type_inventory WHERE is_deleted = 0 AND stay_date = #{today}</select>
+    <select id="listPendingOrders" resultType="com.harbor.hotel.infrastructure.persistence.po.PendingOrderPO">
+        SELECT CAST(o.id AS CHAR) AS orderId, o.order_no AS orderNo, o.booker_name AS bookerName, o.room_count AS roomCount,
+               o.room_type_name_snapshot AS roomTypeName, DATE_FORMAT(o.planned_checkin_time, '%Y-%m-%d %H:%i:%s') AS plannedCheckinTime
+        FROM booking_order o WHERE o.is_deleted = 0 AND o.status = 'PENDING' AND DATE(o.planned_checkin_time) = #{today}
+        ORDER BY o.create_time DESC, o.id DESC
+    </select>
+<select id="missingInventories" resultType="int">SELECT COUNT(*) FROM room_type rt LEFT JOIN room_type_inventory i ON i.room_type_id=rt.id AND i.stay_date=#{today} AND i.is_deleted=0 WHERE rt.is_deleted=0 AND i.id IS NULL</select></mapper>

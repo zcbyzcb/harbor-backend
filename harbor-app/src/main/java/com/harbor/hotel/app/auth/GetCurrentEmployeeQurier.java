@@ -1,0 +1,15 @@
+package com.harbor.hotel.app.auth;
+
+import com.harbor.hotel.app.auth.transfer.EmployeeTransfer;
+import com.harbor.hotel.domain.auth.EmployeeSessionIdentity;
+import com.harbor.hotel.domain.shared.DomainException;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class GetCurrentEmployeeQurier {
+    public EmployeeDTO query(EmployeeSessionIdentity identity) {
+        if (identity == null) throw new DomainException("UNAUTHENTICATED");
+        return EmployeeTransfer.toDTO(identity);
+    }
+}

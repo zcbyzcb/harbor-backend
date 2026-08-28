@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: harbor-hotel
+  datasource:
+    url: ${HOTEL_DB_URL:jdbc:mysql://127.0.0.1:3306/harbor_hotel?useUnicode=true&characterEncoding=utf8&connectionTimeZone=Asia/Shanghai}
+    username: ${HOTEL_DB_USERNAME:root}
+    password: ${HOTEL_DB_PASSWORD:}
+    hikari:
+      connection-timeout: 5000
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-init-sql: SET time_zone = '+08:00'
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: Asia/Shanghai
+server:
+  port: ${SERVER_PORT:18080}
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        secure: ${HOTEL_COOKIE_SECURE:false}
+        same-site: lax
+  error:
+    include-message: never
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    local-cache-scope: STATEMENT
+    default-statement-timeout: 10
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+hotel:
+  zone-id: Asia/Shanghai
+  inventory-window-days: 7
+  xxl-job:
+    enabled: false
+    admin-addresses: ${XXL_JOB_ADMIN_ADDRESSES:}
+    access-token: ${XXL_JOB_ACCESS_TOKEN:}
+    app-name: harbor-hotel-executor
+logging:
+  file:
+    path: ${HOTEL_LOG_PATH:./logs}

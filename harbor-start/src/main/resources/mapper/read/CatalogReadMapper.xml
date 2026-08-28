@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.CatalogReadMapper"><select id="roomTypeIds" resultType="long">SELECT id FROM room_type WHERE is_deleted=0 ORDER BY id</select></mapper>

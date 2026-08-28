@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.harbor.hotel.infrastructure.persistence.mapper.EmployeeAuthMapper">
+    <select id="findActiveByUsername" resultType="com.harbor.hotel.infrastructure.persistence.mapper.EmployeeAuthMapper$EmployeeAuthPO">
+        SELECT id, username, display_name AS displayName, password_hash AS passwordHash
+        FROM sys_employee
+        WHERE username = #{username} AND is_deleted = 0
+    </select>
+    <select id="findActiveById" resultType="com.harbor.hotel.infrastructure.persistence.mapper.EmployeeAuthMapper$EmployeeAuthPO">
+        SELECT id, username, display_name AS displayName, password_hash AS passwordHash
+        FROM sys_employee
+        WHERE id = #{id} AND is_deleted = 0
+    </select>
+</mapper>
+
